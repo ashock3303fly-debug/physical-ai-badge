@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0A2540">
+<title>物理 AI 大会身份牌 · 你是场上的谁</title>
+<style>
+  :root{
+    --blue:#0066FF;
+    --blue-d:#0A2540;
+    --violet:#7A5AF8;
+    --cyan:#22D3EE;
+    --gold:#F5A623;
+    --green:#22c55e;
+    --ink:#0d1117;
+    --ink2:#4a5568;
+    --ink3:#8a94a6;
+    --line:#e8ecf3;
+    --bg:#f4f6fb;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif;
+    background:var(--bg);color:var(--ink);
+    display:flex;justify-content:center;min-height:100vh;
+  }
+  .app{width:100%;max-width:480px;min-height:100vh;background:#fff;position:relative;overflow:hidden;box-shadow:0 0 60px rgba(10,37,64,.08)}
+  .screen{display:none;flex-direction:column;min-height:100vh;animation:fade .35s ease}
+  .screen.on{display:flex}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  /* ============ 动画 SVG 图标系统 ============ */
+  .isvg{width:100%;height:100%;display:block;overflow:visible}
+  .a-spin{transform-box:fill-box;transform-origin:center;animation:k-spin 3.6s linear infinite}
+  .a-pop{transform-box:fill-box;transform-origin:center;animation:k-pop 1.8s ease-in-out infinite}
+  .a-swing{transform-box:fill-box;transform-origin:top center;animation:k-swing 2.6s ease-in-out infinite}
+  .a-bob{animation:k-bob 2.1s ease-in-out infinite}
+  .a-blink{animation:k-blink 1.15s steps(1,end) infinite}
+  .a-scan{animation:k-scan 2.6s ease-in-out infinite}
+  .a-step1{transform-box:fill-box;transform-origin:top center;animation:k-step1 1.15s ease-in-out infinite}
+  .a-step2{transform-box:fill-box;transform-origin:top center;animation:k-step2 1.15s ease-in-out infinite}
+  .a-flip{transform-box:fill-box;transform-origin:center;animation:k-flip 2.6s ease-in-out infinite}
+  @keyframes k-spin{to{transform:rotate(360deg)}}
+  @keyframes k-pop{0%,100%{opacity:.35;transform:scale(.7)}55%{opacity:1;transform:scale(1.12)}}
+  @keyframes k-swing{0%,100%{transform:rotate(-9deg)}50%{transform:rotate(9deg)}}
+  @keyframes k-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.6px)}}
+  @keyframes k-blink{0%,49%{opacity:1}50%,100%{opacity:.12}}
+  @keyframes k-scan{0%,100%{transform:translateX(-5px);opacity:.15}50%{transform:translateX(5px);opacity:1}}
+  @keyframes k-step1{0%,100%{transform:rotate(-15deg)}50%{transform:rotate(15deg)}}
+  @keyframes k-step2{0%,100%{transform:rotate(15deg)}50%{transform:rotate(-15deg)}}
+  @keyframes k-flip{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.16)}}
+
+  /* ============ 封面 ============ */
+  .cover{
+    background:
+      radial-gradient(120% 80% at 50% -10%, rgba(122,90,248,.5), transparent 60%),
+      radial-gradient(100% 70% at 90% 8%, rgba(34,211,238,.32), transparent 55%),
+      radial-gradient(90% 60% at 0% 100%, rgba(245,166,35,.18), transparent 60%),
+      linear-gradient(160deg,#0A2540 0%,#123a6b 55%,#0A2540 100%);
+    color:#fff;padding:36px 26px 28px;position:relative;flex:1;display:flex;flex-direction:column;
+  }
+  .cover .grid-bg{position:absolute;inset:0;opacity:.16;pointer-events:none;
+    background-image:linear-gradient(rgba(255,255,255,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.35) 1px,transparent 1px);
+    background-size:26px 26px;
+    mask-image:radial-gradient(80% 60% at 50% 30%,#000,transparent 85%);
+    -webkit-mask-image:radial-gradient(80% 60% at 50% 30%,#000,transparent 85%);}
+  .kicker{position:relative;display:inline-flex;align-items:center;gap:7px;align-self:flex-start;
+    font-size:12px;letter-spacing:.04em;font-weight:600;background:rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.24);padding:6px 12px;border-radius:999px;backdrop-filter:blur(6px)}
+  .kicker .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);animation:k-pop 1.8s ease-in-out infinite}
+
+  /* 大会全称（第一屏，受控两行，避免窄屏孤字换行） */
+  .cover .conf-name{position:relative;margin:13px 0 0;font-size:16px;line-height:1.42;font-weight:800;
+    letter-spacing:.005em;color:#fff;text-shadow:0 1px 10px rgba(10,37,64,.35)}
+  .cover .conf-name span{font-size:14.5px;font-weight:600;color:rgba(255,255,255,.78)}
+
+  .badge-art{position:relative;margin:18px auto 2px;width:208px}
+  .badge-art .lanyard{width:2px;height:22px;background:linear-gradient(#7DE2FF,#A78BFA);margin:0 auto}
+  .badge-art .card{
+    background:linear-gradient(150deg,rgba(255,255,255,.16),rgba(255,255,255,.05));
+    border:1.5px solid rgba(255,255,255,.28);border-radius:16px;padding:14px 15px 12px;
+    backdrop-filter:blur(8px);box-shadow:0 14px 34px rgba(0,0,0,.28);
+    animation:k-bob 4.2s ease-in-out infinite;
+  }
+  .badge-art .row1{display:flex;align-items:center;justify-content:space-between;font-size:10.5px;letter-spacing:.06em;color:rgba(255,255,255,.72)}
+  .badge-art .row1 b{color:#7DE2FF;font-weight:700}
+  .badge-art .theme{font-size:16px;font-weight:800;letter-spacing:.02em;margin:9px 0 4px}
+  .badge-art .robot{margin-top:11px;height:58px;border-radius:12px;display:grid;place-items:center;
+    background:linear-gradient(160deg,rgba(125,226,255,.17),rgba(167,139,250,.13));
+    border:1px solid rgba(125,226,255,.32);color:#7DE2FF;
+    box-shadow:inset 0 0 18px rgba(125,226,255,.13)}
+  .badge-art .robot .robot-ic{width:46px;height:46px;display:block}
+
+  .cover h1{position:relative;font-size:26px;line-height:1.28;letter-spacing:-.02em;margin:15px 0 8px;font-weight:800}
+  .cover h1 em{font-style:normal;background:linear-gradient(90deg,#7DE2FF,#A78BFA);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .cover .sub{position:relative;font-size:13.6px;color:rgba(255,255,255,.82);line-height:1.7;margin:0}
+
+  /* 封面动线预览 */
+  .routeprev{position:relative;display:flex;align-items:center;justify-content:space-between;
+    margin-top:14px;padding:11px 8px;border-radius:16px;
+    background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14)}
+  .routeprev::before{content:"";position:absolute;left:34px;right:34px;top:26px;height:1.5px;
+    background:repeating-linear-gradient(90deg,rgba(255,255,255,.42) 0 5px,transparent 5px 11px)}
+  .rp{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;flex:1}
+  .rp .rp-ic{width:32px;height:32px;border-radius:11px;display:grid;place-items:center;color:#7DE2FF;
+    background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2)}
+  .rp .rp-ic svg{width:19px;height:19px}
+  .rp span{font-size:10.5px;color:rgba(255,255,255,.78);font-weight:600}
+  .cover .tags{position:relative;display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .cover .tags span{font-size:12px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);padding:5px 11px;border-radius:999px;color:rgba(255,255,255,.9)}
+  .spacer{flex:1}
+  .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:none;border-radius:14px;
+    font-size:16px;font-weight:700;padding:16px;cursor:pointer;font-family:inherit;transition:transform .15s ease,box-shadow .2s ease}
+  .btn:active{transform:scale(.975)}
+  .btn-primary{background:linear-gradient(135deg,#4d8dff,#0066FF);color:#fff;box-shadow:0 10px 24px rgba(0,102,255,.35)}
+  .btn-ghost{background:#fff;color:var(--blue-d);border:1.5px solid var(--line)}
+  .cover .btn-primary{margin-top:18px}
+  .cover .foot-note{position:relative;text-align:center;font-size:11.5px;color:rgba(255,255,255,.55);margin-top:10px;line-height:1.6}
+
+  /* ============ 动线进度（盖章） ============ */
+  .route{position:relative;padding:13px 18px 11px;background:#fff;border-bottom:1px solid var(--line)}
+  .rline{position:absolute;left:45px;right:45px;top:30px;height:2.5px;background:#eef1f7;border-radius:2px}
+  .rline i{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,#4d8dff,#7A5AF8);
+    border-radius:2px;transition:width .55s cubic-bezier(.2,.8,.2,1)}
+  .rstops{position:relative;display:flex;justify-content:space-between}
+  .rstop{display:flex;flex-direction:column;align-items:center;gap:5px;width:60px}
+  .rstop .sdot{position:relative;width:34px;height:34px;border-radius:12px;background:#f4f7fc;border:1.5px solid var(--line);
+    display:grid;place-items:center;color:#b6c0d2;transition:all .3s ease}
+  .rstop .sdot > svg{width:19px;height:19px}
+  .rstop .slabel{font-size:10.5px;color:var(--ink3);font-weight:600;transition:color .3s}
+  .rstop.active .sdot{color:var(--blue);border-color:#bcd3ff;background:#eef4ff;box-shadow:0 4px 14px rgba(0,102,255,.18);transform:translateY(-1px)}
+  .rstop.active .slabel{color:var(--blue)}
+  .rstop.done .sdot{color:#fff;background:linear-gradient(135deg,#4d8dff,#0066FF);border-color:transparent;box-shadow:0 5px 14px rgba(0,102,255,.32)}
+  .rstop.done .slabel{color:var(--ink2)}
+  .stamp{position:absolute;right:-7px;bottom:-7px;width:19px;height:19px;border-radius:50%;
+    background:var(--green);color:#fff;font-size:11px;font-weight:800;display:grid;place-items:center;
+    border:2px solid #fff;opacity:0;transform:scale(.2) rotate(-45deg);
+    transition:opacity .3s ease,transform .45s cubic-bezier(.2,1.6,.4,1)}
+  .rstop.done .stamp{opacity:1;transform:scale(1) rotate(0)}
+  :is(.stamp,.btick) svg{width:11px;height:11px}
+
+  .qhead{padding:15px 24px 2px;display:flex;align-items:center;justify-content:space-between}
+  .qhead .idx{font-size:12.5px;font-weight:700;color:var(--blue);letter-spacing:.04em}
+  .qhead .idx b{font-size:19px}
+  .qhead .idx span{color:#8a94a6;font-weight:600}
+  .qhead .step{font-size:12px;color:var(--ink3)}
+  .qbody{padding:6px 22px 0;flex:1}
+  .qtag{display:inline-block;font-size:11.5px;font-weight:600;color:var(--violet);background:#f1eeff;padding:4px 10px;border-radius:8px;margin-bottom:11px}
+  .qtitle{font-size:21px;font-weight:800;letter-spacing:-.01em;line-height:1.36;margin:0 0 7px}
+  .qdesc{font-size:13.6px;color:var(--ink2);line-height:1.65;margin:0 0 17px}
+
+  /* —— Q1 身份卡 —— */
+  .badge-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;padding-bottom:26px}
+  .bcard{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:7px;
+    background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:16px 12px 14px;
+    font-family:inherit;cursor:pointer;overflow:hidden;transition:all .2s ease}
+  .bcard::before{content:"";position:absolute;top:0;left:50%;width:26px;height:8px;margin-left:-13px;
+    border-radius:0 0 6px 6px;background:#eef1f7;transition:background .2s}
+  .bcard .bic{width:50px;height:50px;border-radius:15px;display:grid;place-items:center;color:var(--blue);
+    background:linear-gradient(135deg,#eef3ff,#e3ebff);transition:all .25s}
+  .bcard .bic svg{width:29px;height:29px}
+  .bcard b{font-size:14px;font-weight:700;line-height:1.3}
+  .bcard small{font-size:11.5px;color:var(--ink3);line-height:1.45}
+  .bcard:active{transform:scale(.97)}
+  .bcard.sel{border-color:var(--blue);background:linear-gradient(160deg,#f6faff,#eef4ff);
+    box-shadow:0 8px 22px rgba(0,102,255,.16);transform:translateY(-2px)}
+  .bcard.sel::before{background:var(--blue)}
+  .bcard.sel .bic{background:linear-gradient(135deg,#d9e7ff,#c9dcff)}
+  .btick{position:absolute;right:10px;top:10px;width:19px;height:19px;border-radius:50%;background:var(--green);color:#fff;
+    font-size:11px;font-weight:800;display:grid;place-items:center;opacity:0;transform:scale(.2) rotate(-45deg);
+    transition:opacity .25s,transform .4s cubic-bezier(.2,1.6,.4,1)}
+  .sel > .btick,.on > .btick{opacity:1;transform:scale(1) rotate(0)}
+
+  /* —— Q2 展位地图 —— */
+  .mapwrap{position:relative;height:324px;border-radius:18px;overflow:hidden;
+    background:#f7f9fd;border:1.5px solid var(--line);margin-bottom:26px}
+  .mapwrap .mgrid{position:absolute;inset:0;background-image:
+      linear-gradient(rgba(0,102,255,.06) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(0,102,255,.06) 1px,transparent 1px);
+    background-size:26px 26px}
+  .mapwrap .mroad{position:absolute;left:50%;top:0;bottom:0;width:22px;margin-left:-11px;background:linear-gradient(180deg,#eef2f9,#e6ecf7)}
+  .mapwrap .mroad-h{position:absolute;left:0;right:0;top:50%;height:22px;margin-top:-11px;background:linear-gradient(90deg,#eef2f9,#e6ecf7)}
+  .booth{position:absolute;width:44%;height:40%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+    background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:8px;cursor:pointer;font-family:inherit;
+    transition:all .25s ease;z-index:2}
+  .booth .bic{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;color:var(--blue);
+    background:linear-gradient(135deg,#eef3ff,#e3ebff);transition:all .25s}
+  .booth .bic svg{width:25px;height:25px}
+  .booth b{font-size:12.3px;font-weight:700;line-height:1.25}
+  .booth small{font-size:10.5px;color:var(--ink3);line-height:1.35}
+  .booth:active{transform:scale(.97)}
+  .booth.on{border-color:var(--blue);background:linear-gradient(160deg,#f6faff,#eaf2ff);
+    box-shadow:0 10px 26px rgba(0,102,255,.2);z-index:3}
+  .booth.on .bic{background:linear-gradient(135deg,#d9e7ff,#c9dcff)}
+  .walker{position:absolute;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;z-index:4;
+    background:linear-gradient(135deg,#4d8dff,#0066FF);box-shadow:0 6px 16px rgba(0,102,255,.42),0 0 0 5px rgba(0,102,255,.12);
+    transform:translate(-50%,-50%);transition:left .62s cubic-bezier(.4,0,.2,1),top .62s cubic-bezier(.4,0,.2,1)}
+  .walker svg{width:20px;height:20px}
+  .walker::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:1.5px solid rgba(0,102,255,.4);animation:k-pop 1.8s ease-in-out infinite}
+
+  /* —— Q3 日程甘特轴 —— */
+  .gantt{margin-bottom:26px}
+  .gaxis{display:flex;justify-content:space-between;font-size:11px;color:var(--ink3);font-weight:600;margin:0 6px 8px 54px}
+  .grow{display:flex;align-items:stretch;gap:10px;margin-bottom:9px;cursor:pointer}
+  .grow .room{flex:0 0 44px;display:flex;align-items:center;justify-content:flex-end;
+    font-size:11.5px;font-weight:700;color:var(--ink3);transition:color .25s}
+  .grow .bar{position:relative;flex:1;display:flex;align-items:center;gap:11px;
+    background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;
+    font-family:inherit;text-align:left;cursor:pointer;transition:all .25s ease;overflow:hidden}
+  .grow .bar .bic{flex:0 0 auto;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:var(--blue);
+    background:linear-gradient(135deg,#eef3ff,#e3ebff);transition:all .25s}
+  .grow .bar .bic svg{width:23px;height:23px}
+  .grow .bar .tx{flex:1;min-width:0}
+  .grow .bar .tx b{display:block;font-size:13.5px;font-weight:700;line-height:1.3}
+  .grow .bar .tx small{font-size:11px;color:var(--ink3);line-height:1.4}
+  .grow .bar > .btick{flex:0 0 auto;width:20px;height:20px;position:static}
+  .grow.on .room{color:var(--blue)}
+  .grow.on .bar{border-color:var(--blue);background:linear-gradient(135deg,#f6faff,#eaf2ff);box-shadow:0 8px 22px rgba(0,102,255,.16)}
+  .grow.on .bar .bic{background:linear-gradient(135deg,#d9e7ff,#c9dcff)}
+
+  /* —— Q2/Q3 选中态：图标「亮起 + 弹现 + 光晕」，未选中则静态待机 —— */
+  .booth .bic,
+  .grow .bar .bic{position:relative;color:#93a1b8;background:#f0f3f9}
+  .booth .bic svg,
+  .grow .bar .bic svg{transition:width .26s ease,height .26s ease}
+  /* 未选中：停掉图标内部动画，让图标呈「待机」静态；选中后动画自然从头播放 */
+  :is(.booth,.grow):not(.on) .bic :is(.a-spin,.a-pop,.a-swing,.a-bob,.a-blink,.a-scan,.a-step1,.a-step2,.a-flip){animation:none}
+  .booth.on .bic,
+  .grow.on .bar .bic{color:var(--blue);
+    animation:k-iconin .56s cubic-bezier(.2,1.3,.35,1) forwards,k-halo 1.5s ease-out .12s infinite}
+  .booth.on .bic svg{width:30px;height:30px}
+  .grow.on .bar .bic svg{width:27px;height:27px}
+  @keyframes k-iconin{0%{transform:scale(.4) rotate(-18deg)}64%{transform:scale(1.14) rotate(5deg)}100%{transform:scale(1) rotate(0)}}
+  @keyframes k-halo{0%{box-shadow:0 0 0 0 rgba(0,102,255,.38)}70%,100%{box-shadow:0 0 0 7px rgba(0,102,255,0)}}
+
+  /* —— Q4 立场罗盘 —— */
+  .compass-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:24px}
+  .compass-wrap svg.cmp{width:100%;max-width:300px;height:auto;overflow:visible}
+  .cmp .quad{fill:#f7f9fd;stroke:#e8ecf3;stroke-width:1.5;cursor:pointer;transition:fill .25s}
+  .cmp .quad.on{fill:#eaf2ff;stroke:#bcd3ff}
+  .cmp .qlab{font-size:15px;font-weight:800;fill:#4a5568;cursor:pointer;transition:fill .25s}
+  .cmp .qlab.on{fill:#0066FF}
+  .cmp .qsublab{font-size:10.5px;fill:#8a94a6;cursor:pointer}
+  .cmp .needle{transform-box:view-box;transform-origin:160px 160px;transition:transform .8s cubic-bezier(.34,1.45,.5,1);pointer-events:none}
+  .cmp .hub{fill:#fff;stroke:#0066FF;stroke-width:2.5;pointer-events:none}
+  .pick-card{margin-top:15px;width:100%;background:#f7f9fd;border:1.5px solid var(--line);border-radius:15px;
+    padding:13px 15px;display:flex;align-items:center;gap:11px;min-height:64px;transition:all .25s}
+  .pick-card.on{background:linear-gradient(135deg,#f6faff,#eef4ff);border-color:#bcd3ff}
+  .pick-card .pci{flex:0 0 auto;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:#b6c0d2;
+    background:#eef1f7;transition:all .25s}
+  .pick-card .pci svg{width:23px;height:23px}
+  .pick-card.on .pci{color:var(--blue);background:linear-gradient(135deg,#d9e7ff,#c9dcff)}
+  .pick-card .ptx b{display:block;font-size:13.5px;font-weight:750}
+  .pick-card .ptx small{font-size:11.5px;color:var(--ink3);line-height:1.45}
+
+  /* ============ 合成动画 ============ */
+  #s-load{align-items:center;justify-content:center;position:relative;overflow:hidden;
+    background:radial-gradient(90% 60% at 50% 22%,rgba(122,90,248,.42),transparent 62%),linear-gradient(165deg,#0A2540,#123a6b 58%,#0A2540);color:#fff}
+  #s-load .grid-bg{position:absolute;inset:0;opacity:.14;pointer-events:none;
+    background-image:linear-gradient(rgba(255,255,255,.4) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.4) 1px,transparent 1px);
+    background-size:26px 26px;
+    mask-image:radial-gradient(60% 50% at 50% 42%,#000,transparent 85%);
+    -webkit-mask-image:radial-gradient(60% 50% at 50% 42%,#000,transparent 85%)}
+  .loadwrap{position:relative;width:292px;height:292px;display:grid;place-items:center}
+  .ring{position:absolute;width:200px;height:200px;border-radius:50%;border:1.5px dashed rgba(125,226,255,.35);animation:k-spin 14s linear infinite}
+  .ring.r2{width:262px;height:262px;border-style:solid;border-color:rgba(255,255,255,.09);animation-duration:24s;animation-direction:reverse}
+  .core{position:relative;width:80px;height:80px;border-radius:26px;display:grid;place-items:center;color:#7DE2FF;
+    background:radial-gradient(circle at 34% 28%,rgba(125,226,255,.5),rgba(122,90,248,.24));
+    border:1.5px solid rgba(255,255,255,.32);box-shadow:0 0 44px rgba(125,226,255,.36);
+    animation:k-pop2 1.7s ease-in-out infinite}
+  .core svg{width:44px;height:44px}
+  @keyframes k-pop2{0%,100%{transform:scale(.94)}50%{transform:scale(1.07)}}
+  .orbits{position:absolute;inset:0}
+  .chip{position:absolute;width:54px;height:54px;border-radius:17px;display:grid;place-items:center;color:#7DE2FF;
+    background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(6px);
+    transition:transform .95s cubic-bezier(.5,0,.2,1),opacity .95s ease}
+  .chip svg{width:29px;height:29px}
+  .chip:nth-child(1){left:0;top:0;--tx:118px;--ty:118px}
+  .chip:nth-child(2){right:0;top:0;--tx:-118px;--ty:118px}
+  .chip:nth-child(3){left:0;bottom:0;--tx:118px;--ty:-118px}
+  .chip:nth-child(4){right:0;bottom:0;--tx:-118px;--ty:-118px}
+  #s-load.go .chip{transform:translate(var(--tx),var(--ty)) scale(.45);opacity:0}
+  .loadtxt{position:absolute;bottom:-6px;left:0;right:0;text-align:center;font-size:13.5px;color:rgba(255,255,255,.86);letter-spacing:.02em}
+  .loadbar{position:absolute;bottom:-42px;left:50%;width:190px;margin-left:-95px;height:4px;border-radius:3px;background:rgba(255,255,255,.16);overflow:hidden}
+  .loadbar i{display:block;height:100%;width:0;border-radius:3px;background:linear-gradient(90deg,#7DE2FF,#A78BFA);transition:width .18s linear}
+
+  /* ============ 结果 ============ */
+  .res-top{background:
+      radial-gradient(120% 90% at 50% 0%, rgba(122,90,248,.5), transparent 62%),
+      linear-gradient(160deg,#0A2540,#123a6b 60%,#0f2f57);
+    color:#fff;padding:28px 24px 22px;position:relative;overflow:hidden}
+  .res-top .grid-bg{position:absolute;inset:0;opacity:.14;pointer-events:none;
+    background-image:linear-gradient(rgba(255,255,255,.4) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.4) 1px,transparent 1px);
+    background-size:24px 24px;mask-image:radial-gradient(70% 60% at 50% 20%,#000,transparent 85%);
+    -webkit-mask-image:radial-gradient(70% 60% at 50% 20%,#000,transparent 85%);}
+  .mini-badge{position:relative;background:linear-gradient(150deg,rgba(255,255,255,.15),rgba(255,255,255,.05));
+    border:1.5px solid rgba(255,255,255,.26);border-radius:16px;padding:15px;backdrop-filter:blur(8px)}
+  .mini-badge .top{display:flex;justify-content:space-between;font-size:10.5px;letter-spacing:.06em;color:rgba(255,255,255,.7)}
+  .mini-badge .top b{color:#7DE2FF}
+  .mini-badge .mid{display:flex;align-items:center;gap:14px;margin-top:12px}
+  .mini-badge .ico{width:62px;height:62px;border-radius:16px;display:grid;place-items:center;color:#7DE2FF;
+    background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.3),rgba(255,255,255,.06));box-shadow:inset 0 0 22px rgba(125,226,255,.32)}
+  .mini-badge .ico svg{width:36px;height:36px}
+  .mini-badge .info{flex:1;min-width:0}
+  .mini-badge .tier{font-size:11px;font-weight:700;color:var(--cyan);letter-spacing:.1em}
+  .mini-badge .name{font-size:22px;font-weight:800;letter-spacing:-.01em;margin:2px 0 4px}
+  .mini-badge .quote{font-size:12.5px;color:rgba(255,255,255,.8);line-height:1.55}
+  .score-row{position:relative;display:flex;align-items:baseline;justify-content:center;gap:6px;margin-top:15px}
+  .score-row .num{font-size:36px;font-weight:800;font-variant-numeric:tabular-nums}
+  .score-row .u{font-size:15px;color:rgba(255,255,255,.75);font-weight:600}
+  .score-row .lbl{font-size:12.5px;color:rgba(255,255,255,.6);margin-left:6px}
+  .stance{position:relative;margin:13px auto 0;width:fit-content;display:flex;align-items:center;gap:8px;
+    background:rgba(245,166,35,.16);border:1px solid rgba(245,166,35,.45);color:#FFD98A;
+    font-size:13px;font-weight:700;padding:8px 16px;border-radius:999px}
+  .stance svg{width:17px;height:17px}
+
+  .res-body{padding:20px 22px 30px;flex:1}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 1px 2px rgba(16,24,40,.03)}
+  .panel h3{margin:0 0 12px;font-size:14.5px;font-weight:750;display:flex;align-items:center;gap:8px}
+  .panel h3 .d{width:6px;height:16px;border-radius:3px;background:var(--blue)}
+  .radar-wrap{display:flex;justify-content:center}
+  .dims{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  .dim{background:#f7f9fd;border-radius:12px;padding:10px 12px}
+  .dim .n{font-size:12px;color:var(--ink3);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;gap:6px}
+  .dim .n i{width:16px;height:16px;color:var(--blue);flex:0 0 auto}
+  .dim .n em{font-style:normal;font-weight:700;color:var(--ink2);flex:1}
+  .dim .n span{font-weight:700;color:var(--ink2)}
+  .dim .bar{height:6px;background:#e6ecf6;border-radius:4px;overflow:hidden}
+  .dim .bar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#4d8dff,#7A5AF8);width:0;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+  .tagrow{display:flex;flex-wrap:wrap;gap:8px}
+  .tagrow span{font-size:12.5px;font-weight:600;color:var(--blue-d);background:#eef4ff;padding:6px 12px;border-radius:999px}
+  .panel p{margin:0;font-size:13.8px;line-height:1.75;color:var(--ink2)}
+  ul.adv{margin:0;padding:0;list-style:none}
+  ul.adv li{position:relative;padding-left:22px;margin-bottom:10px;font-size:13.6px;line-height:1.65;color:var(--ink2)}
+  ul.adv li:last-child{margin-bottom:0}
+  ul.adv li::before{content:"";position:absolute;left:4px;top:7px;width:9px;height:9px;border-radius:3px;background:linear-gradient(135deg,#4d8dff,#7A5AF8)}
+
+  /* 我的动线日程 */
+  .tl{position:relative;padding-left:62px}
+  .tl::before{content:"";position:absolute;left:45px;top:10px;bottom:10px;width:2px;background:linear-gradient(#4d8dff,#7A5AF8);border-radius:2px}
+  .tl-item{position:relative;margin-bottom:14px;padding-right:30px}
+  .tl-item:last-child{margin-bottom:0}
+  .tl-item .tt{position:absolute;left:-62px;top:2px;width:40px;text-align:right;font-size:11px;font-weight:700;color:var(--ink3)}
+  .tl-item .dot{position:absolute;left:-23px;top:5px;width:11px;height:11px;border-radius:50%;
+    background:#fff;border:2.5px solid #4d8dff;box-shadow:0 0 0 3px #eef4ff}
+  .tl-item .tx b{display:block;font-size:13.2px;font-weight:700;line-height:1.45}
+  .tl-item .tx small{font-size:11.5px;color:var(--ink3);line-height:1.5}
+  .tl-item .tic{position:absolute;right:0;top:0;width:26px;height:26px;color:#b6c0d2}
+
+  /* 冷知识翻转卡 */
+  .knows{margin-top:2px;display:flex;flex-direction:column;gap:9px}
+  .know{position:relative;border-radius:13px;background:#f7f9fd;border:1.5px solid var(--line);
+    padding:12px 32px 12px 14px;cursor:pointer;transition:all .25s}
+  .know .q{display:flex;align-items:flex-start;gap:9px;font-size:13px;font-weight:650;line-height:1.45}
+  .know .q i{flex:0 0 auto;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
+    background:#eef4ff;color:var(--blue);font-size:11px;font-weight:800;font-style:normal;margin-top:1px}
+  .know .a{max-height:0;overflow:hidden;opacity:0;font-size:12.5px;color:var(--ink2);line-height:1.68;
+    transition:max-height .35s ease,opacity .3s ease,margin .3s ease}
+  .know.open{background:linear-gradient(135deg,#f6faff,#eef4ff);border-color:#bcd3ff}
+  .know.open .a{max-height:180px;opacity:1;margin-top:9px}
+  .know .chev{position:absolute;right:12px;top:14px;width:14px;height:14px;color:var(--ink3);transition:transform .3s}
+  .know.open .chev{transform:rotate(180deg)}
+
+  .facts{display:flex;flex-direction:column;gap:9px}
+  .fact{display:flex;gap:10px;font-size:13.2px;line-height:1.6;color:var(--ink2)}
+  .fact b{flex:0 0 auto;color:var(--blue);font-weight:800}
+
+  .actions{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+  .actions .row{display:flex;gap:10px}
+  .actions .row .btn{flex:1;font-size:14.5px;padding:14px}
+  .actions .btn > span[data-ic]{width:19px;height:19px;display:inline-block;flex:0 0 auto}
+  /* 按钮内联图标统一尺寸：任何位置的 .btn 都要锁死，否则 SVG 会撑满按钮 */
+  .btn > span[data-ic]{width:19px;height:19px;display:inline-block;flex:0 0 auto;line-height:0}
+  .btn > span[data-ic] svg{width:100%;height:100%;display:block}
+  .timer{text-align:center;font-size:12px;color:var(--ink3);line-height:1.8;margin-top:16px}
+
+  /* ============ 前置主 CTA（结果页顶部，第一眼就引导发帖） ============ */
+  .cta-early{position:relative;margin-top:17px;text-align:center}
+  .cta-early .btn-primary{position:relative;width:100%;box-shadow:0 12px 28px rgba(0,102,255,.45);
+    animation:k-pop .5s cubic-bezier(.2,.9,.3,1.2) both}
+  .cta-early .hint{position:relative;margin:10px 2px 0;font-size:11.5px;color:rgba(255,255,255,.72);line-height:1.6}
+
+  /* ============ 同场参会榜 ============ */
+  .panel h3 .flag{font-size:10px;font-weight:700;color:var(--ink3);background:#f1f4fa;
+    border:1px solid var(--line);border-radius:999px;padding:2px 8px;letter-spacing:.02em;margin-left:auto}
+  .rsec-t{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:750;color:var(--ink2);margin:2px 0 11px}
+  .rsec-t::before{content:"";width:14px;height:3px;border-radius:2px;background:var(--blue);flex:0 0 auto}
+  .rsec-t.gap{margin-top:20px}
+  .swar{display:flex;flex-direction:column;gap:9px}
+  .swar-row{display:flex;align-items:center;gap:9px;font-size:12.5px}
+  .swar-n{flex:0 0 66px;color:var(--ink2);font-weight:650;display:flex;align-items:center;gap:4px}
+  .swar-n b{font-size:9.5px;font-weight:800;color:#fff;background:var(--blue);border-radius:999px;padding:1px 5px;line-height:1.5}
+  .swar-bar{flex:1;height:9px;background:#eef1f7;border-radius:5px;overflow:hidden}
+  .swar-bar i{display:block;height:100%;width:0;border-radius:5px;
+    background:linear-gradient(90deg,#a9bede,#7d9dd4);transition:width .8s cubic-bezier(.2,.8,.2,1)}
+  .swar-row.me .swar-n{color:var(--blue-d);font-weight:800}
+  .swar-row.me .swar-bar i{background:linear-gradient(90deg,#4d8dff,#0066FF)}
+  .swar-p{flex:0 0 38px;text-align:right;color:var(--ink3);font-variant-numeric:tabular-nums;font-weight:700}
+  .swar-row.me .swar-p{color:var(--blue)}
+  .rlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+  .rli{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px dashed var(--line);font-size:13px}
+  .rli:last-child{border-bottom:none}
+  .rk{flex:0 0 22px;height:22px;border-radius:7px;display:grid;place-items:center;font-size:11.5px;font-weight:800;
+    background:#f1f4fa;color:var(--ink3)}
+  .rli:nth-child(1) .rk{background:linear-gradient(135deg,#ffd76a,#F5A623);color:#5a3c00}
+  .rli:nth-child(2) .rk{background:linear-gradient(135deg,#e2e8f2,#bcc8db);color:#3a465c}
+  .rli:nth-child(3) .rk{background:linear-gradient(135deg,#f6cda5,#d79a63);color:#5a3a1c}
+  .rli .rname{flex:1;min-width:0;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rli .rrole{flex:0 0 auto;font-size:10.5px;color:var(--ink3);background:#f6f8fc;border:1px solid var(--line);border-radius:999px;padding:2px 7px}
+  .rli .rpct{flex:0 0 44px;text-align:right;font-weight:800;color:var(--blue);font-variant-numeric:tabular-nums}
+  .rli.me{background:rgba(0,102,255,.055);border-radius:12px;padding-left:10px;padding-right:10px;border-bottom-color:transparent}
+  .rli.me .rname{color:var(--blue-d)}
+  .rank-cta{width:100%;margin-top:14px;border:1.5px dashed #b9cdf3;background:rgba(0,102,255,.045);color:var(--blue-d);
+    font-family:inherit;font-size:12.8px;font-weight:750;padding:12px;border-radius:13px;cursor:pointer;transition:all .18s ease}
+  .rank-cta:active{transform:scale(.98);background:rgba(0,102,255,.09)}
+
+  .toast{position:fixed;left:50%;bottom:70px;transform:translateX(-50%) translateY(20px);background:rgba(13,17,23,.92);color:#fff;
+    font-size:13.5px;padding:12px 20px;border-radius:12px;opacity:0;pointer-events:none;transition:all .3s ease;z-index:60;max-width:80%;text-align:center;line-height:1.5}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast{display:flex;align-items:center;gap:8px}
+  .toast svg{width:17px;height:17px;flex:0 0 auto;color:#6ee7a8}
+  .toast.warn{background:rgba(122,63,10,.95)}
+  .toast.warn svg{color:#ffd08a}
+  .poster-modal{position:fixed;inset:0;background:rgba(10,20,35,.72);display:none;align-items:center;justify-content:center;padding:22px;z-index:70;backdrop-filter:blur(4px)}
+  .poster-modal.on{display:flex}
+  .poster-modal .inner{background:#fff;border-radius:18px;padding:14px;max-width:340px;width:100%;text-align:center}
+  .poster-modal img{width:100%;border-radius:12px;display:block}
+  .poster-modal p{margin:12px 2px 6px;font-size:12.5px;color:var(--ink3);line-height:1.6}
+  .poster-modal .btn{margin-top:8px}
+
+  @media(max-width:400px){
+    .cover h1{font-size:23px}
+    .qtitle{font-size:19px}
+    .mini-badge .name{font-size:19px}
+    .badge-grid{gap:9px}
+    .bcard{padding:14px 9px 12px}
+    .mapwrap{height:296px}
+  }
+
+  /* 四关选择反馈：对应图标弹出、播放、收起后推进 */
+  .pick-feedback{position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(7,25,53,.38);backdrop-filter:blur(4px);pointer-events:auto}
+  .pick-feedback.on{display:flex;animation:pick-backdrop .18s ease-out}
+  .pick-feedback-card{width:min(100%,300px);padding:28px 20px 24px;border-radius:28px;background:#fff;text-align:center;box-shadow:0 24px 80px rgba(0,35,90,.24);animation:pick-card-in .48s cubic-bezier(.2,.8,.2,1) forwards}
+  .pick-feedback-step{font-size:12px;font-weight:700;letter-spacing:2px;color:#7a8aa3}
+  .pick-feedback-icon{position:relative;display:block;width:104px;height:104px;margin:22px auto;color:var(--blue);padding:18px;border-radius:32px;background:#edf4ff;animation:pick-icon-in .6s ease-out forwards}
+  .pick-feedback-icon:before,.pick-feedback-icon:after{content:"";position:absolute;inset:-6px;border:2px solid rgba(0,102,255,.26);border-radius:38px;animation:pick-ring 1s ease-out forwards}
+  .pick-feedback-icon:after{animation-delay:.16s}
+  .pick-feedback-title{font-size:20px;font-weight:800;line-height:1.5;color:var(--ink)}
+  .pick-feedback-note{margin-top:9px;font-size:13px;color:#66758d;line-height:1.6}
+  .pick-feedback.leaving{opacity:0;transition:opacity .18s ease}
+  @keyframes pick-backdrop{from{opacity:0}to{opacity:1}}
+  @keyframes pick-card-in{0%{opacity:0;transform:translateY(24px) scale(.78)}65%{opacity:1;transform:translateY(-4px) scale(1.035)}100%{transform:none}}
+  @keyframes pick-icon-in{0%{opacity:0;transform:scale(.25) rotate(-20deg)}60%{opacity:1;transform:scale(1.16) rotate(6deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+  @keyframes pick-ring{0%{opacity:0;transform:scale(.8)}30%{opacity:1}100%{opacity:0;transform:scale(1.5)}}
+  @media(prefers-reduced-motion:reduce){.pick-feedback,.pick-feedback-card,.pick-feedback-icon,.pick-feedback-icon:before,.pick-feedback-icon:after{animation:none!important}.pick-feedback .isvg *{animation:none!important}}
+
+
+  .draft-box{position:relative;margin-top:20px;padding:18px;border-radius:18px;background:#fff;color:var(--ink);text-align:left}
+  .draft-box h3{margin:0 0 8px;font-size:17px}
+  .draft-help,.draft-count{font-size:12px;color:#718096;line-height:1.6}
+  .draft-box label{display:block;margin:14px 0 8px;font-size:13px;font-weight:700}
+  .draft-box textarea{display:block;width:100%;min-height:320px;box-sizing:border-box;resize:vertical;padding:12px;border:1px solid #dce5f2;border-radius:12px;font:14px/1.7 inherit;color:#24344b;background:#f8faff}
+  .draft-box textarea:focus{outline:2px solid #0066ff;outline-offset:2px}
+  .draft-count{text-align:right;margin-top:5px}
+  .draft-preview{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;line-height:1.8;padding:14px;background:#f4f7fc;border-radius:12px}
+  .draft-topic{display:block;margin-top:10px;color:#0066ff;font-size:13px;overflow-wrap:anywhere}
+
+  /* 封面叙事：标题三拍 → 动线四站 → 最终说明 */
+  .cover-story .story-line{display:block;animation:cover-line .65s cubic-bezier(.2,.8,.2,1) both}
+  .cover-story .story-first{animation-delay:.15s}
+  .cover-story .story-second{animation-delay:.85s;color:rgba(255,255,255,.8);font-size:23px;margin-top:4px}
+  .cover-story .story-third{animation-delay:1.5s;font-size:32px;margin-top:3px}
+  .cover .routeprev{animation:cover-line .4s ease both;animation-delay:2.15s;margin-bottom:15px}
+  .cover .routeprev::before{transform-origin:left;animation:cover-path 1.6s ease both;animation-delay:2.35s}
+  .cover .rp{animation:cover-stop .55s cubic-bezier(.2,.8,.2,1) both}
+  .cover .rp:nth-child(1){animation-delay:2.3s}
+  .cover .rp:nth-child(2){animation-delay:2.75s}
+  .cover .rp:nth-child(3){animation-delay:3.2s}
+  .cover .rp:nth-child(4){animation-delay:3.65s}
+  .cover .rp .rp-ic{animation:cover-glow .75s ease both;animation-delay:inherit}
+  .cover .rp:nth-child(1) .rp-ic{animation-delay:2.3s}
+  .cover .rp:nth-child(2) .rp-ic{animation-delay:2.75s}
+  .cover .rp:nth-child(3) .rp-ic{animation-delay:3.2s}
+  .cover .rp:nth-child(4) .rp-ic{animation-delay:3.65s}
+  .cover .sub{animation:cover-line .75s ease both;animation-delay:4.3s}
+  .cover .sub strong{color:#7de2ff;font-weight:800}
+  .cover .tags{animation:cover-line .65s ease both;animation-delay:4.65s}
+  @keyframes cover-line{from{opacity:0;transform:translateY(14px);filter:blur(3px)}to{opacity:1;transform:none;filter:blur(0)}}
+  @keyframes cover-stop{0%{opacity:0;transform:translateY(10px) scale(.65)}70%{opacity:1;transform:translateY(-3px) scale(1.08)}100%{opacity:1;transform:none}}
+  @keyframes cover-path{from{opacity:0;transform:scaleX(0)}to{opacity:1;transform:scaleX(1)}}
+  @keyframes cover-glow{0%{box-shadow:0 0 0 0 rgba(125,226,255,0)}45%{box-shadow:0 0 0 7px rgba(125,226,255,.22);background:rgba(125,226,255,.3)}100%{box-shadow:0 0 0 12px rgba(125,226,255,0)}}
+  @media(prefers-reduced-motion:reduce){.cover-story .story-line,.cover .routeprev,.cover .routeprev::before,.cover .rp,.cover .rp .rp-ic,.cover .sub,.cover .tags{animation:none!important}.cover .isvg *,.cover .badge-art .card,.cover .kicker .dot{animation:none!important}}
+
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ============ 封面 ============ -->
+  <section class="screen on" id="s-cover">
+    <div class="cover">
+      <div class="grid-bg"></div>
+      <span class="kicker"><span class="dot"></span>大会前瞻 · 参会指南</span>
+
+      <p class="conf-name">2026 世界物理 AI 大会<br><span>暨宇树合作伙伴生态大会</span></p>
+
+      <div class="badge-art">
+        <div class="lanyard"></div>
+        <div class="card">
+          <div class="row1"><span>CONFERENCE BADGE</span><b>NO.1001</b></div>
+          <div class="theme">宇十俱进 · 树业共生</div>
+          <div class="robot"><span class="robot-ic" data-ic="humanoid"></span></div>
+        </div>
+      </div>
+
+      <h1 class="cover-story"><span class="story-line story-first">宇树要办物理 AI 大会，</span><span class="story-line story-second">而你，</span><span class="story-line story-third">是<em>场上的谁</em>？</span></h1>
+
+      <div class="routeprev">
+        <div class="rp"><span class="rp-ic" data-ic="ticket"></span><span>签到</span></div>
+        <div class="rp"><span class="rp-ic" data-ic="dog"></span><span>逛展</span></div>
+        <div class="rp"><span class="rp-ic" data-ic="code"></span><span>分论坛</span></div>
+        <div class="rp"><span class="rp-ic" data-ic="compass"></span><span>押注</span></div>
+      </div>
+
+      <p class="sub">从签到、逛展到选分论坛——走完一条大会动线，<br>看看你在物理 AI 生态里站哪个位置，<strong>你押身体还是押大脑</strong>。</p>
+
+      <div class="tags">
+        <span>4 步参会动线</span>
+        <span>8 档参会角色</span>
+        <span>1 个可争论立场</span>
+      </div>
+
+      <div class="spacer"></div>
+      <button class="btn btn-primary" onclick="startTest()">领取我的身份牌 →</button>
+      <div class="foot-note" id="coverNote">活动时间：—<br>奖励在活动结束后统一下发</div>
+    </div>
+  </section>
+
+  <!-- ============ 题目 ============ -->
+  <section class="screen" id="s-quiz">
+    <div class="route">
+      <div class="rline"><i id="rfill"></i></div>
+      <div class="rstops" id="rstops"></div>
+    </div>
+    <div class="qhead">
+      <div class="idx">Q<b id="qidx">1</b><span>/4</span></div>
+      <div class="step" id="qstep">签到入场</div>
+    </div>
+    <div class="qbody">
+      <span class="qtag" id="qtag"></span>
+      <h2 class="qtitle" id="qtitle"></h2>
+      <p class="qdesc" id="qdesc"></p>
+      <div id="qstage"></div>
+    </div>
+  </section>
+
+  <!-- ============ 合成动画 ============ -->
+  <section class="screen" id="s-load">
+    <div class="grid-bg"></div>
+    <div class="loadwrap">
+      <div class="ring"></div>
+      <div class="ring r2"></div>
+      <div class="orbits">
+        <span class="chip" data-ic="chip"></span>
+        <span class="chip" data-ic="money"></span>
+        <span class="chip" data-ic="crane"></span>
+        <span class="chip" data-ic="network"></span>
+      </div>
+      <div class="core" data-ic="badge"></div>
+      <div class="loadtxt" id="loadtxt">正在核对你的动线…</div>
+      <div class="loadbar"><i id="loadfill"></i></div>
+    </div>
+  </section>
+
+  <!-- ============ 结果 ============ -->
+  <section class="screen" id="s-result">
+    <div class="res-top">
+      <div class="grid-bg"></div>
+      <div class="mini-badge">
+        <div class="top"><span>2026 世界物理 AI 大会 · 身份牌</span><b>宇十俱进 · 树业共生</b></div>
+        <div class="mid">
+          <div class="ico" id="resIcon"></div>
+          <div class="info">
+            <div class="tier" id="resTier">TIER</div>
+            <div class="name" id="resName">参会角色</div>
+            <div class="quote" id="resQuote"></div>
+          </div>
+        </div>
+      </div>
+      <div class="score-row">
+        <span class="num" id="resScore">0</span><span class="u">%</span>
+        <span class="lbl">生态参与度</span>
+      </div>
+      <div class="stance" id="resStance"></div>
+
+      <div class="draft-box" id="postDraft">
+        <h3>你的帖子草稿</h3>
+        <div class="draft-help">根据你的四步选择写好了，发布前可以改成自己的说法。</div>
+        <label for="draftBody">编辑正文</label>
+        <textarea id="draftBody" maxlength="2000" oninput="updateDraftPreview()" aria-describedby="draftCount"></textarea>
+        <div class="draft-count" id="draftCount"></div>
+        <span class="draft-topic" id="draftTopic"></span>
+      </div>
+
+      <!-- 主 CTA 前置：看完结果第一眼就引导发帖，不要埋在页面最底部 -->
+      <div class="cta-early">
+        <button class="btn btn-primary" onclick="publish()"><span data-ic="megaphone"></span>发布这份草稿，去话题聊聊</button>
+        <p class="hint">带上你的立场发到话题，评论区会有人来跟你站队</p>
+      </div>
+    </div>
+
+    <div class="res-body">
+
+      <!-- 排行榜：发帖的社会证据 -->
+      <div class="panel rank-panel">
+        <h3><span class="d"></span>同场参会榜<span class="flag" id="rankFlag">演示数据</span></h3>
+
+        <div class="rsec-t">立场战况 · 全场都在押哪一边</div>
+        <div class="swar" id="rankStance"></div>
+
+        <div class="rsec-t gap">身份牌 TOP 5</div>
+        <ol class="rlist" id="rankTop"></ol>
+
+        <button class="rank-cta" onclick="publish()">看完榜单，去话题说说你为什么押这一派 →</button>
+      </div>
+
+      <div class="panel">
+        <h3><span class="d"></span>四维生态画像</h3>
+        <div class="radar-wrap" id="radar"></div>
+        <div class="dims" id="dims"></div>
+      </div>
+
+
+
+      <div class="panel">
+        <h3><span class="d"></span>你的大会动线 · 10.22</h3>
+        <div class="tl" id="resTimeline"></div>
+      </div>
+
+
+      <div class="panel">
+        <h3><span class="d"></span>大会冷知识 · 点开看</h3>
+        <div class="knows" id="resKnows"></div>
+      </div>
+
+
+      <div class="actions">
+        <div class="row">
+          <button class="btn btn-ghost" onclick="makePoster()">生成海报</button>
+          <button class="btn btn-ghost" onclick="restart()">重新测</button>
+        </div>
+      </div>
+
+      <div class="timer" id="resultNote">
+        活动时间：—<br>
+        奖励在活动结束后统一下发，完成测试 / 发帖即计入参与
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="pick-feedback" id="pickFeedback" role="status" aria-live="polite" aria-atomic="true"></div>
+<div class="poster-modal" id="posterModal" onclick="closePoster(event)">
+  <div class="inner" onclick="event.stopPropagation()">
+    <img id="posterImg" alt="物理 AI 大会身份牌海报">
+    <p>长按图片保存到相册 · Demo 环境为本地生成</p>
+    <button class="btn btn-ghost" onclick="closePoster()">关闭</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   1. 动画 SVG 图标库（替代 emoji）—— 统一 0 0 40 40 线描风格
+   ============================================================ */
+const ICONS = {
+  /* —— 身份 —— */
+  ticket:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <g class="a-swing"><path d="M20 5v5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        <circle cx="20" cy="6.4" r="2.3" fill="none" stroke="currentColor" stroke-width="1.5"/></g>
+      <rect x="6" y="11" width="28" height="20" rx="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M16 11v20" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 3" stroke-linecap="round"/>
+      <circle class="a-pop" cx="25" cy="21" r="3.4" fill="currentColor"/></svg>`,
+  grad:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <path d="M20 9 35 16.5 20 24 5 16.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M12 19.5v6.6c0 2.2 3.6 4 8 4s8-1.8 8-4v-6.6" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <g class="a-swing"><path d="M32 16.5v9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="32" cy="28" r="2.3" fill="currentColor"/></g></svg>`,
+  laptop:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <rect x="8" y="9" width="24" height="16" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M3.5 30.5h33" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+      <path d="M16 25.5h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+      <rect class="a-blink" x="12" y="14" width="9" height="2" rx="1" fill="currentColor"/>
+      <rect x="12" y="18.5" width="14" height="2" rx="1" fill="currentColor" opacity=".45"/></svg>`,
+  link:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <circle cx="15" cy="20" r="8.6" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <circle cx="25" cy="20" r="8.6" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <circle class="a-pop" cx="20" cy="20" r="3.3" fill="currentColor"/></svg>`,
+  /* —— 展品 —— */
+  dog:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <rect x="7" y="13" width="22" height="9.5" rx="4.7" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M29 15.2l6-2.2v7.6l-6-2.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      <circle cx="25" cy="16.6" r="1.3" fill="currentColor"/>
+      <g class="a-step1"><path d="M11.5 22.5v9" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></g>
+      <g class="a-step2"><path d="M18.5 22.5v9" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></g>
+      <g class="a-step1"><path d="M26.5 22.5v9" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></g></svg>`,
+  store:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <path d="M8.5 16v16h23V16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M5 16h30l-2.6-7.2H7.6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      <g class="a-spin">
+        <path d="M20 19.4l4.3 2.4v4.9L20 29.1l-4.3-2.4v-4.9z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M20 19.4v4.9l4.3 2.4M20 24.3l-4.3 2.4" stroke="currentColor" stroke-width="1.3"/></g></svg>`,
+  hand:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <rect x="11.5" y="19.5" width="17" height="15" rx="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M11.5 26.5h17" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2 3" opacity=".55"/>
+      <circle class="a-pop" cx="12.5" cy="13.5" r="2.2" fill="currentColor"/>
+      <circle class="a-pop" cx="17.2" cy="11.6" r="2.2" fill="currentColor" style="animation-delay:.12s"/>
+      <circle class="a-pop" cx="22.2" cy="10.9" r="2.2" fill="currentColor" style="animation-delay:.24s"/>
+      <circle class="a-pop" cx="27" cy="12" r="2.2" fill="currentColor" style="animation-delay:.36s"/>
+      <circle class="a-pop" cx="31" cy="14.6" r="2.2" fill="currentColor" style="animation-delay:.48s"/></svg>`,
+  humanoid:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <circle class="a-pop" cx="20" cy="4.6" r="2.1" fill="currentColor"/>
+      <path d="M20 6.7v3.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+      <rect x="13.6" y="10" width="12.8" height="10.4" rx="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <circle cx="17.4" cy="15.2" r="1.4" fill="currentColor"/><circle cx="22.6" cy="15.2" r="1.4" fill="currentColor"/>
+      <path d="M13.2 12.4l-3 6.4M26.8 12.4l3 6.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <g class="a-step1"><path d="M17 20.4v14.2" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></g>
+      <g class="a-step2"><path d="M23 20.4v14.2" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></g></svg>`,
+  /* —— 分论坛 —— */
+  stage:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <path d="M6 12h28" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+      <path d="M9 12v6c2.5 0 2.5 2.6 5 2.6s2.5-2.6 5-2.6 2.5 2.6 5 2.6 2.5-2.6 5-2.6v-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <g class="a-scan"><path d="M20 16.5l-4.4 12h8.8z" fill="currentColor" opacity=".3"/></g>
+      <path d="M10 33h20" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>`,
+  factory:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <path d="M4 33V18.5l7 3.6v-3.6l7 3.6v-3.6l7 3.6V33z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+      <path d="M4 33h32" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+      <g class="a-spin">
+        <circle cx="31" cy="24" r="5" fill="none" stroke="currentColor" stroke-width="1.7"/>
+        <path d="M31 16.6v2.4M31 29v2.4M23.6 24h2.4M36 24h2.4M25.8 18.8l1.7 1.7M34.5 27.5l1.7 1.7M36.2 18.8l-1.7 1.7M27.5 27.5l-1.7 1.7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></g></svg>`,
+  code:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <rect x="5.5" y="8" width="29" height="24" rx="3.6" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M5.5 14.4h29" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="9.5" cy="11.2" r="1.15" fill="currentColor"/>
+      <circle cx="13.4" cy="11.2" r="1.15" fill="currentColor" opacity=".5"/>
+      <path d="M16.6 20.4l-3.4 3 3.4 3M23.4 20.4l3.4 3-3.4 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <path class="a-blink" d="M20 19.8v7.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+  coin:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <g class="a-flip">
+        <circle cx="13" cy="20" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M13 14.6v10.8M10.4 17.4h4.4a2.1 2.1 0 010 4.2h-4.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+      <path class="a-bob" d="M23 28.5l6-6.5 4 3.2 6-7.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path class="a-bob" d="M34.4 18H39v4.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  /* —— 立场 —— */
+  leg:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <circle cx="20" cy="7.5" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <g class="a-step1">
+        <path d="M20 10.7v9.3" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="20" cy="21.6" r="2.6" fill="none" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M20 24.2v8.6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M20 32.8h-5.4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></g></svg>`,
+  brain:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <path d="M20 8.6c-3-2.6-7.2-1.4-8.2 2.2-2.6.5-4.2 2.7-3.7 5.5-2 1.7-2.2 4.8-.3 6.7-.6 2.7.9 5.2 3.6 6 .4 2.7 2.9 4.4 5.6 3.8 1 1.9 3.3 2.5 5.2 1.4z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+      <path d="M20 8.6c3-2.6 7.2-1.4 8.2 2.2 2.6.5 4.2 2.7 3.7 5.5 2 1.7 2.2 4.8.3 6.7.6 2.7-.9 5.2-3.6 6-.4 2.7-2.9 4.4-5.6 3.8-1 1.9-3.3 2.5-5.2 1.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+      <circle class="a-pop" cx="15" cy="18" r="1.8" fill="currentColor"/>
+      <circle class="a-pop" cx="24.5" cy="21" r="1.8" fill="currentColor" style="animation-delay:.3s"/>
+      <circle class="a-pop" cx="18" cy="26" r="1.8" fill="currentColor" style="animation-delay:.6s"/></svg>`,
+  globe:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <circle cx="20" cy="20" r="13" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <ellipse cx="20" cy="20" rx="13" ry="5.4" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <g class="a-scan"><ellipse cx="20" cy="20" rx="5.4" ry="13" fill="none" stroke="currentColor" stroke-width="1.4"/></g>
+      <circle class="a-pop" cx="26" cy="14.5" r="2" fill="currentColor"/></svg>`,
+  tree:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <path d="M20 33V18.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M20 23.5l-6.2-5.2M20 21l6.2-5.4M20 17.6l-4-5.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+      <circle class="a-pop" cx="20" cy="11" r="3.4" fill="currentColor"/>
+      <circle class="a-pop" cx="13" cy="16.8" r="2.6" fill="currentColor" style="animation-delay:.2s"/>
+      <circle class="a-pop" cx="27" cy="14.4" r="2.6" fill="currentColor" style="animation-delay:.4s"/>
+      <circle class="a-pop" cx="15.4" cy="11.2" r="2.1" fill="currentColor" style="animation-delay:.6s"/>
+      <path d="M13 33h14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>`,
+  /* —— 四维 —— */
+  chip:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <rect x="12" y="12" width="16" height="16" rx="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <rect class="a-pop" x="17" y="17" width="6" height="6" rx="1.6" fill="currentColor"/>
+      <path d="M16 12V7.4M20 12V7.4M24 12V7.4M16 33v-5M20 33v-5M24 33v-5M12 16H7.4M12 20H7.4M12 24H7.4M33 16h-5M33 20h-5M33 24h-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`,
+  money:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <circle cx="20" cy="20" r="12" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path class="a-bob" d="M20 11.6v16.8M15.2 15h6.6a3.4 3.4 0 010 6.8h-6.6M15.2 21.8h7.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  crane:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <path d="M18 33V9" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>
+      <path d="M7 13h26" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>
+      <path d="M18 9l-5.4 4M18 9l5.4 4" stroke="currentColor" stroke-width="1.5"/>
+      <g class="a-bob">
+        <path d="M28.5 13v6.4" stroke="currentColor" stroke-width="1.5"/>
+        <rect x="25.6" y="19.4" width="5.8" height="5" rx="1.2" fill="currentColor" opacity=".85"/></g>
+      <path d="M12 33h12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>`,
+  network:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <path d="M20 12.6L9.5 27.4M20 12.6l10.5 14.8M9.5 27.4h21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <circle class="a-pop" cx="20" cy="11.4" r="3.4" fill="currentColor"/>
+      <circle class="a-pop" cx="8.8" cy="28.2" r="3" fill="currentColor" style="animation-delay:.25s"/>
+      <circle class="a-pop" cx="31.2" cy="28.2" r="3" fill="currentColor" style="animation-delay:.5s"/></svg>`,
+  /* —— 通用 —— */
+  badge:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <path d="M15.5 8V4.4M24.5 8V4.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <rect x="8.6" y="8" width="22.8" height="28" rx="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <circle class="a-pop" cx="20" cy="19" r="4.6" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M14.4 29h11.2M14.4 32.6h7.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".7"/></svg>`,
+  compass:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <circle cx="20" cy="20" r="13" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <g class="a-bob"><path d="M20 8.4l4.2 11.6L20 31.6l-4.2-11.6z" fill="currentColor"/></g>
+      <circle cx="20" cy="20" r="2" fill="#fff" stroke="currentColor" stroke-width="1.5"/></svg>`,
+  megaphone:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <path d="M8 16.5v7l6 1.4V15.1z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+      <path d="M14 15.1l16-6.6v23l-16-6.6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+      <path class="a-scan" d="M32 13.5h3.6M32 20h4.4M32 26.5h3.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>`,
+  /* —— 状态 —— */
+  check:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <path d="M10.5 21.4l6.6 6.6L29.6 13" fill="none" stroke="currentColor" stroke-width="5.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  warn:`<svg xmlns="http://www.w3.org/2000/svg" class="isvg" viewBox="0 0 40 40">
+      <g class="a-swing"><path d="M20 7.5L34 32.5H6z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+      <path d="M20 15.4v8.2" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="20" cy="27.6" r="1.6" fill="currentColor"/></g></svg>`
+};
+const icon = name => ICONS[name] || ICONS.badge;
+function paintIcons(root){
+  (root || document).querySelectorAll('[data-ic]').forEach(el=>{
+    if(el.dataset.painted === '1') return;
+    el.insertAdjacentHTML('afterbegin', icon(el.dataset.ic));
+    el.dataset.painted = '1';
+  });
+}
+
+/* ============================================================
+   2. 配置（唯一数据入口）
+   ============================================================ */
+const CONFIG = {
+  activityName: 'physical_ai_badge',
+  activitySlug: 'physical-ai-badge',
+  topicName: '宇树将办物理AI大会，机器人要长大脑？',   // 与后台配置逐字一致（含末尾「？」）
+  topicEtid: '7aR7TzPr',
+  topicId:   216038,
+  webcid: '',                       // 兜底值；正式优先走链接参数
+  startText: '【待运营确认】',
+  endText:   '【待运营确认】',
+  rewardText: '奖励在活动结束后统一下发（非完成即发）'
+};
+const PARAMS    = new URLSearchParams(location.search);
+const DEMO_MODE = PARAMS.get('demo') === '1';
+const WEBCID    = (PARAMS.get('webcid') || PARAMS.get('web_cid') || CONFIG.webcid || '').trim();
+
+/* ============================================================
+   3. 内容题库（4 关，4 种交互形态）
+   ============================================================ */
+const DIMS = [
+  { key:'tech',  name:'技术硬核度', icon:'chip'    },
+  { key:'biz',   name:'商业嗅觉',   icon:'money'   },
+  { key:'scene', name:'场景落地力', icon:'crane'   },
+  { key:'eco',   name:'生态连接力', icon:'network' }
+];
+const STOPS = [
+  { n:'签到',   ic:'ticket'  },
+  { n:'逛展',   ic:'dog'     },
+  { n:'分论坛', ic:'code'    },
+  { n:'押注',   ic:'compass' }
+];
+
+/* 每题选项按「参与深度」递增赋分：全组合总分区间 12–24，8 档全部可达。
+   改分值前务必重跑全组合（4⁴ = 256）校验，否则结果分布会塌缩。 */
+const QUESTIONS = [
+  {
+    kind:'badge', tag:'第一站 · 09:00 签到', step:'签到入场',
+    title:'签到台前，你递上什么名片？',
+    desc:'这场大会面向公众开放，3000+ 嘉宾从不同位置赶来——你以什么身份入场？',
+    options:[
+      { ic:'ticket', t:'路过看看的观众',    s:'朋友送的票，先进来感受一下', p:{scene:1, eco:1} },
+      { ic:'grad',   t:'学生 / 转行者',      s:'想找找未来的方向',           p:{tech:1, scene:2} },
+      { ic:'laptop', t:'技术 / 产品从业者',  s:'冲着具身智能技术体系来的',   p:{tech:3, scene:1} },
+      { ic:'link',   t:'生态伙伴 / 渠道商',  s:'来找合作伙伴，谈落地与共建', p:{eco:3, biz:2} }
+    ]
+  },
+  {
+    kind:'map', tag:'第二站 · 10:30 展区', step:'展区体验',
+    title:'40+ 展示专区，你先冲向哪一台？',
+    desc:'现场可近距离体验宇树全系机器人。时间有限，点一下你要走向的展位——',
+    options:[
+      { ic:'dog',      t:'Go2 四足机器狗',        s:'已量产的消费级爆款',       p:{scene:2, tech:1} },
+      { ic:'store',    t:'UniStore 开发者生态',   s:'机器人的「软件商店」',     p:{eco:3, tech:1} },
+      { ic:'hand',     t:'Dex5 灵巧手 + 4D 雷达', s:'真正的硬核零部件：手与眼', p:{tech:3, scene:1, biz:1} },
+      { ic:'humanoid', t:'G1 / H2 人形机器人',    s:'直扑最前沿的本体',         p:{tech:4, eco:2} }
+    ]
+  },
+  {
+    kind:'agenda', tag:'第三站 · 14:00 分论坛', step:'选分论坛',
+    title:'下午 7 个平行分论坛，你进哪一间？',
+    desc:'同一时间，七场同时开讲（14:00–17:00）。你只能选一间——这一票暴露了你在生态里的位置。',
+    options:[
+      { ic:'stage',   t:'普教 & 文娱', s:'机器人大众化的那一面',   room:'A 厅', p:{scene:2, eco:1} },
+      { ic:'factory', t:'行业应用',    s:'工业与商业场景怎么落地', room:'B 厅', p:{scene:3, biz:1} },
+      { ic:'code',    t:'开发者',      s:'技术体系与开源生态开放', room:'C 厅', p:{tech:4, eco:1} },
+      { ic:'coin',    t:'创投',        s:'依托「宇创计划」的路演', room:'D 厅', p:{biz:4, eco:2} }
+    ]
+  },
+  {
+    kind:'compass', tag:'第四站 · 15:30 押注', step:'你的立场',
+    title:'全场最热之争：机器人的下一步，押哪里？',
+    desc:'黄仁勋说「物理 AI 的 ChatGPT 时刻已经到来」，王兴兴说机器人 2–3 年内能听懂话干成事。转动罗盘，指向你的判断——',
+    options:[
+      { ic:'leg',   t:'押「身体」', s:'先把跑跳稳与成本打下来，本体才是硬实力', p:{scene:3, tech:1}, stance:'身体派' },
+      { ic:'brain', t:'押「大脑」', s:'缺的是大模型，脑子聪明了身体自然有用',   p:{tech:4, biz:2},   stance:'大脑派' },
+      { ic:'globe', t:'押「场景」', s:'别争了，先在真实场景里跑通闭环再说',     p:{scene:3, eco:2},  stance:'场景派' },
+      { ic:'tree',  t:'押「生态」', s:'这场大会说明白了：赢的是生态，不是单品', p:{eco:4, biz:3},    stance:'生态派' }
+    ]
+  }
+];
+
+/* 8 档参会角色（按生态参与度 0–100 归档） */
+const ROLES = [
+  { min:0,  max:12,  ic:'ticket', tier:'TIER 1', name:'路过看看的观众',
+    quote:'票是免费的，先来看看热闹也挺好。',
+    tags:['初次接触','看热闹','入口级'],
+    diag:'你还没被拽进物理 AI 的叙事里——这很正常，2026 才刚被叫作「物理 AI 元年」。但这场大会的价值恰恰在于：它是把「具身智能」从概念拉到你能看懂的最短路径。',
+    adv:['先去 40+ 展示专区，亲眼看一次人形机器人怎么走路','挑一场普教 & 文娱分论坛，门槛最低、最容易看懂','听完主论坛，回来想想：机器人和你的工作有交集吗'] },
+  { min:13, max:25,  ic:'grad', tier:'TIER 2', name:'好奇的围观者',
+    quote:'你知道这事很热，但还没决定要不要下场。',
+    tags:['有感知','未入局','观望中'],
+    diag:'你能说出「物理 AI」「具身智能」这些词，也知道宇树的名气，但工具和你之间还隔着一层。你需要的不是更多新闻，而是一个具体的切入口。',
+    adv:['选一个你熟悉的场景，想清楚机器人能替谁干活','去行业应用分论坛，看别人是怎么把机器人卖出去的','把你现场看到的一台机器写下来，就是一条好帖'] },
+  { min:26, max:37,  ic:'laptop', tier:'TIER 3', name:'硬核技术宅',
+    quote:'你关心的不是发布会，是它背后那套技术栈。',
+    tags:['技术驱动','看参数','追开源'],
+    diag:'你是那种会盯着峰值扭矩、自由度和算力平台看的人。宇树把 UnifoLM-WMA-0 / VLA-0 都开源了、UniStore 也开放了——这些对你来说比看它翻跟头有意思得多。',
+    adv:['开发者分论坛是你的主场，别错过技术体系开放那场','去 UniStore 展台，看看能不能把你的想法装上机器人','把你对「本体 vs 大脑」的判断写出来，技术圈最认这个'] },
+  { min:38, max:50,  ic:'code', tier:'TIER 4', name:'具身开发者',
+    quote:'你已经不满足于看，手有点痒。',
+    tags:['能上手','懂场景','要落地'],
+    diag:'你对技术有判断力，也开始关心它能不能真正跑起来。你处在「看懂」和「做成」之间——这个位置最缺的是一次真实项目的验证，而不是又一个 demo。',
+    adv:['在开发者分论坛找一个能对接的团队或工具链','把评审标准从「酷不酷」换成「能不能连续工作 8 小时」','在现场找一个真实痛点，回来把它写成需求'] },
+  { min:51, max:62,  ic:'crane', tier:'TIER 5', name:'场景筑路人',
+    quote:'你只关心一件事：这东西能不能解决我的问题。',
+    tags:['场景导向','要闭环','务实'],
+    diag:'你不追技术概念，你追的是「哪台机器能替我干活、省多少钱」。这正是物理 AI 落地的关键一环——技术不缺想象力，缺的是你这样的场景需求方。',
+    adv:['行业应用分论坛优先，那里全是同行在踩坑','带一个具体场景去，问展台「这个你们做过吗」','把落地数据发到话题，比任何观点都有说服力'] },
+  { min:63, max:75,  ic:'factory', tier:'TIER 6', name:'行业方案商',
+    quote:'你不只看单台机器，你看的是整套解决方案。',
+    tags:['成体系','懂客户','要规模'],
+    diag:'你能把技术翻译成客户听得懂的价值，也懂得集成、交付和服务。宇树这次把「合作伙伴生态大会」写进名字，说明它要的正是你这种人——但生态的门槛，也从「会卖」变成了「能共建」。',
+    adv:['合作伙伴分论坛必去，摸清宇树的渠道政策','关注 B2 耐高温消防机型这类细分场景方案','把你做成的一个案例写出来，招募下游伙伴'] },
+  { min:76, max:87,  ic:'coin', tier:'TIER 7', name:'创投捕手',
+    quote:'你在人群里找的不是产品，是下一个项目。',
+    tags:['看赛道','找标的','懂资本'],
+    diag:'你的嗅觉很准：这场大会的创投分论坛依托「宇创计划」直接做路演——「路演即招商、展示即对接」，等于把一级市场的接头会开在了会场里。你要的卡口就在这。',
+    adv:['创投分论坛全程蹲住，路演名单就是项目池','关注与英伟达合作（Jetson Thor + Isaac GR00T）的生态位','把你的赛道判断发出来，同行会来找你对表'] },
+  { min:88, max:100, ic:'tree', tier:'TIER 8', name:'生态定义者',
+    quote:'你看到的不是一场发布会，是一次产业格局的重排。',
+    tags:['看格局','定规则','长期主义'],
+    diag:'你读得懂宇树的策略：用「世界」抢话语权、用「生态大会」宣告从产品公司转向平台公司。这不是会议，是十周年的战略宣言——而你，站在了定义规则的那一侧。',
+    adv:['主论坛 + 合作伙伴分论坛连轴，别只待在一间房','思考一个问题：当竞争从「谁的机器酷」变成「谁的生态繁荣」，你在哪一环','把你的判断写成帖子，生态里最缺的就是清醒的观点'] }
+];
+const DOM_TAG = { tech:'技术派', biz:'商业派', scene:'场景派', eco:'生态派' };
+
+/* 大会冷知识（可点开） */
+const KNOWS = [
+  { q:'H2 人形机器人身上有多少个自由度？', a:'H2 为仿生设计，拥有 51 个自由度，算力达 2070 TOPS——现场可以看看它到底能做出多细的动作。' },
+  { q:'Dex5-1P 灵巧手有多少个触觉传感器？', a:'94 个。手的「触觉」是机器人从「能动」走向「能干活」的关键一步，展台可以近距离观察。' },
+  { q:'宇树开源了哪些通用模型？', a:'UnifoLM-WMA-0（世界模型）与 UnifoLM-VLA-0（视觉-语言-动作）均已开源；UniStore 应用平台也在 2026 年 5 月向全球开发者开放。' }
+];
+const FACTS = [
+  ['规模','3000+ 嘉宾 · 主会场 4000+ m² · 20+ 开放演讲 · 40+ 展示专区'],
+  ['议程','上午主论坛（9:00–12:00）｜下午 7 个平行分论坛（14:00–17:00）'],
+  ['分论坛','中国区 / 国际区合作伙伴 · 行业应用 · 教育产教融合 · 开发者 · 普教文娱 · 创投'],
+  ['看点','宇树全系机器人（人形 + 四足）近距离体验 · 宇创计划创投路演'],
+  ['报名','宇树科技官方微信公众号，免费、报满为止']
+];
+
+/* ============================================================
+   4. 状态 / 工具
+   ============================================================ */
+const state = { qi:0, picks:[] };
+let MARK = null;
+let pickPending = false;
+let pickAdvanceTimer = null;
+let pickFadeTimer = null;
+const $ = s => document.querySelector(s);
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(e=>e.classList.remove('on'));
+  const el = typeof id === 'string' ? $(id) : id;
+  el.classList.add('on');
+  window.scrollTo(0,0);
+}
+
+/* —— 动线进度 —— */
+function renderRoute(){
+  $('#rstops').innerHTML = STOPS.map((s,i)=>
+    `<div class="rstop" data-i="${i}">
+       <div class="sdot">${icon(s.ic)}<span class="stamp">${icon('check')}</span></div>
+       <span class="slabel">${s.n}</span>
+     </div>`).join('');
+}
+function setRoute(active, doneCount){
+  document.querySelectorAll('.rstop').forEach((el,i)=>{
+    el.classList.toggle('active', i === active);
+    el.classList.toggle('done', i < doneCount);
+  });
+  $('#rfill').style.width = (Math.max(0, Math.min(1, doneCount / (STOPS.length - 1))) * 100) + '%';
+}
+
+/* ============================================================
+   5. 四关渲染（每关一种交互形态）
+   ============================================================ */
+function renderQ(){
+  const q = QUESTIONS[state.qi];
+  $('#qidx').textContent = state.qi + 1;
+  $('#qstep').textContent = q.step;
+  $('#qtag').textContent = q.tag;
+  $('#qtitle').textContent = q.title;
+  $('#qdesc').textContent = q.desc;
+  setRoute(state.qi, state.qi);
+  const stage = $('#qstage');
+  stage.innerHTML = '';
+  MARK = null;
+  if(q.kind === 'badge')       renderBadge(q, stage);
+  else if(q.kind === 'map')    renderMap(q, stage);
+  else if(q.kind === 'agenda') renderAgenda(q, stage);
+  else                         renderCompass(q, stage);
+}
+
+function finishPick(i){
+  if(pickPending) return;
+  pickPending = true;
+  const qi = state.qi, q = QUESTIONS[qi], o = q.options[i];
+  state.picks[qi] = i;
+  if(MARK) MARK(i);
+  setRoute(qi, qi + 1);
+  track('activity_module_click', { module_name:'q' + (qi+1) + '_opt' + (i+1) });
+  const feedback = $('#pickFeedback');
+  const notes = ['身份已确认，欢迎入场','展位已点亮，向你的目标出发','席位已选好，即将进入分论坛','立场已锁定，正在准备你的身份牌'];
+  feedback.innerHTML = '<div class="pick-feedback-card"><div class="pick-feedback-step">' + STOPS[qi].n + ' · 已选择</div><span class="pick-feedback-icon">' + icon(o.ic) + '</span><div class="pick-feedback-title">' + o.t + '</div><div class="pick-feedback-note">' + notes[qi] + '</div></div>';
+  feedback.className = 'pick-feedback on';
+  pickFadeTimer = setTimeout(()=> feedback.classList.add('leaving'), 1200);
+  pickAdvanceTimer = setTimeout(()=>{
+    feedback.className = 'pick-feedback';
+    feedback.innerHTML = '';
+    state.qi = qi + 1;
+    pickPending = false;
+    if(state.qi < QUESTIONS.length) renderQ();
+    else runSynthesis();
+  }, 1400);
+}
+
+/* —— Q1：身份卡 —— */
+function renderBadge(q, stage){
+  const wrap = document.createElement('div');
+  wrap.className = 'badge-grid';
+  wrap.innerHTML = q.options.map((o,i)=>
+    `<button class="bcard" data-i="${i}">
+       <span class="btick">${icon('check')}</span>
+       <span class="bic">${icon(o.ic)}</span>
+       <b>${o.t}</b><small>${o.s}</small>
+     </button>`).join('');
+  wrap.querySelectorAll('.bcard').forEach(el=>{
+    el.onclick = ()=>{
+      wrap.querySelectorAll('.bcard').forEach(x=>x.classList.remove('sel'));
+      el.classList.add('sel');
+      finishPick(+el.dataset.i);
+    };
+  });
+  stage.appendChild(wrap);
+  MARK = i => wrap.querySelector('.bcard[data-i="'+i+'"]').classList.add('sel');
+}
+
+/* —— Q2：展位地图 —— */
+const BOOTH_POS = [
+  { left:4, top:4 }, { right:4, top:4 }, { left:4, bottom:4 }, { right:4, bottom:4 }
+];
+function boothCenter(i){
+  // 停在展位外侧的通道上（不走进展位内部），避免盖住展位文案
+  return { x: (i % 2 === 0) ? 26 : 74, y: (i < 2) ? 46 : 54 };
+}
+function renderMap(q, stage){
+  const wrap = document.createElement('div');
+  wrap.className = 'mapwrap';
+  wrap.innerHTML = '<div class="mgrid"></div><div class="mroad"></div><div class="mroad-h"></div>' +
+    q.options.map((o,i)=>{
+      const p = BOOTH_POS[i];
+      const style = [ p.left!==undefined?('left:'+p.left+'%'):'', p.right!==undefined?('right:'+p.right+'%'):'',
+                      p.top!==undefined?('top:'+p.top+'%'):'', p.bottom!==undefined?('bottom:'+p.bottom+'%'):'' ].join(';');
+      return '<button class="booth" data-i="'+i+'" style="'+style+'">' +
+               '<span class="btick">' + icon('check') + '</span>' +
+               '<span class="bic">' + icon(o.ic) + '</span>' +
+               '<b>' + o.t + '</b><small>' + o.s + '</small>' +
+             '</button>';
+    }).join('') +
+    '<div class="walker" style="left:50%;top:50%">' + icon('humanoid') + '</div>';
+
+  const moveWalker = i => {
+    const c = boothCenter(i), w = wrap.querySelector('.walker');
+    w.style.left = c.x + '%'; w.style.top = c.y + '%';
+  };
+  wrap.querySelectorAll('.booth').forEach(el=>{
+    el.onclick = ()=>{
+      const i = +el.dataset.i;
+      wrap.querySelectorAll('.booth').forEach(x=>x.classList.remove('on'));
+      el.classList.add('on');
+      moveWalker(i);
+      finishPick(i);
+    };
+  });
+  stage.appendChild(wrap);
+  MARK = i => { wrap.querySelector('.booth[data-i="'+i+'"]').classList.add('on'); moveWalker(i); };
+}
+
+/* —— Q3：日程甘特轴 —— */
+function renderAgenda(q, stage){
+  const wrap = document.createElement('div');
+  wrap.className = 'gantt';
+  wrap.innerHTML = '<div class="gaxis"><span>14:00</span><span>15:30</span><span>17:00</span></div>' +
+    q.options.map((o,i)=>
+      '<div class="grow" data-i="'+i+'">' +
+        '<span class="room">' + o.room + '</span>' +
+        '<button class="bar">' +
+          '<span class="bic">' + icon(o.ic) + '</span>' +
+          '<span class="tx"><b>' + o.t + '</b><small>' + o.s + ' · 14:00–17:00</small></span>' +
+          '<span class="btick">' + icon('check') + '</span>' +
+        '</button>' +
+      '</div>').join('');
+  wrap.querySelectorAll('.grow').forEach(el=>{
+    // 整行可点（含厅号 A/B/C/D 厅），不要只让内部按钮可点——移动端指头大，热区要够
+    el.onclick = ()=>{
+      wrap.querySelectorAll('.grow').forEach(x=>x.classList.remove('on'));
+      el.classList.add('on');
+      finishPick(+el.dataset.i);
+    };
+  });
+  stage.appendChild(wrap);
+  MARK = i => wrap.querySelector('.grow[data-i="'+i+'"]').classList.add('on');
+}
+
+/* —— Q4：立场罗盘 —— */
+function polar(cx, cy, a, r){ return [cx + Math.cos(a) * r, cy + Math.sin(a) * r]; }
+function renderCompass(q, stage){
+  const S = 320, C = 160, R = 118;
+  const angs = [-Math.PI/2, 0, Math.PI/2, Math.PI];     // 上 / 右 / 下 / 左
+  const sectors = angs.map((a,i)=>{
+    const a0 = a - Math.PI/4, a1 = a + Math.PI/4;
+    const p0 = polar(C, C, a0, R), p1 = polar(C, C, a1, R);
+    return '<path class="quad" data-i="'+i+'" d="M' + C + ' ' + C +
+           ' L' + p0[0].toFixed(1) + ' ' + p0[1].toFixed(1) +
+           ' A' + R + ' ' + R + ' 0 0 1 ' + p1[0].toFixed(1) + ' ' + p1[1].toFixed(1) + ' Z"/>';
+  }).join('');
+  const labels = angs.map((a,i)=>{
+    const l = polar(C, C, a, R * 0.72);
+    return '<text class="qlab" data-lab="' + i + '" x="' + l[0].toFixed(1) + '" y="' + (l[1] + 5).toFixed(1) + '" text-anchor="middle">' +
+             q.options[i].t.replace(/押「|」/g, '') + '</text>' +
+           '<text class="qsublab" data-lab="' + i + '" x="' + l[0].toFixed(1) + '" y="' + (l[1] + 20).toFixed(1) + '" text-anchor="middle">' +
+             q.options[i].stance + '</text>';
+  }).join('');
+  const tickDots = angs.map(a=>{
+    const t = polar(C, C, a, R - 13);
+    return '<circle cx="' + t[0].toFixed(1) + '" cy="' + t[1].toFixed(1) + '" r="2" fill="#c9d6ea"/>';
+  }).join('');
+
+  const tipY = C - 62, tailY = C + 18, hw = 11;
+  const needlePath = 'M' + C + ' ' + tipY + ' L' + (C + hw) + ' ' + (C + 2) + ' L' + C + ' ' + tailY + ' L' + (C - hw) + ' ' + (C + 2) + ' Z';
+  const needleDark = 'M' + C + ' ' + tailY + ' L' + (C + hw) + ' ' + (C + 2) + ' L' + C + ' ' + (C + 2) + ' Z';
+
+  const wrap = document.createElement('div');
+  wrap.className = 'compass-wrap';
+  wrap.innerHTML =
+    '<svg class="cmp" viewBox="0 0 ' + S + ' ' + S + '" xmlns="http://www.w3.org/2000/svg">' +
+      '<circle cx="' + C + '" cy="' + C + '" r="' + (R + 9) + '" fill="none" stroke="#eef1f7" stroke-width="1.5"/>' +
+      sectors + tickDots + labels +
+      '<g class="needle" id="needle">' +
+        '<path d="' + needlePath + '" fill="#0066FF"/>' +
+        '<path d="' + needleDark + '" fill="#0A2540" opacity=".22"/>' +
+      '</g>' +
+      '<circle class="hub" cx="' + C + '" cy="' + C + '" r="9"/>' +
+    '</svg>' +
+    '<div class="pick-card" id="pickcard">' +
+      '<span class="pci" data-ic="compass"></span>' +
+      '<span class="ptx"><b>转动罗盘，指向你的判断</b><small>身体 / 大脑 / 场景 / 生态，只能押一个</small></span>' +
+    '</div>';
+  paintIcons(wrap);
+
+  const needle = wrap.querySelector('#needle');
+  const card = wrap.querySelector('#pickcard');
+
+  function apply(i){
+    wrap.querySelectorAll('.quad').forEach(x=>x.classList.remove('on'));
+    wrap.querySelectorAll('.qlab').forEach(x=>x.classList.remove('on'));
+    wrap.querySelector('.quad[data-i="' + i + '"]').classList.add('on');
+    wrap.querySelector('.qlab[data-lab="' + i + '"]').classList.add('on');
+    needle.style.transform = 'rotate(' + (i * 90) + 'deg)';
+    const o = q.options[i];
+    card.classList.add('on');
+    card.querySelector('.pci').innerHTML = icon(o.ic);
+    card.querySelector('.ptx').innerHTML = '<b>' + o.t + '</b><small>' + o.s + '</small>';
+  }
+  wrap.querySelectorAll('.quad').forEach(el=>{
+    el.onclick = ()=>{ const i = +el.dataset.i; apply(i); finishPick(i); };
+  });
+  // 罗盘文字标签（主标签 + 立场副标签）同样可点——扇形面积小时，标签是更好按的目标
+  wrap.querySelectorAll('.qlab,.qsublab').forEach(el=>{
+    el.style.cursor = 'pointer';
+    el.onclick = ()=>{ const i = +el.dataset.lab; apply(i); finishPick(i); };
+  });
+  stage.appendChild(wrap);
+  MARK = apply;
+}
+
+/* ============================================================
+   6. 合成动画 → 结果
+   ============================================================ */
+const LOAD_MSGS = ['正在核对你的动线…','正在计算生态参与度…','正在合成四维画像…','正在生成你的身份牌…'];
+function runSynthesis(){
+  const el = $('#s-load');
+  el.classList.remove('go');
+  show('#s-load');
+  $('#loadfill').style.width = '0%';
+  requestAnimationFrame(()=> el.classList.add('go'));
+
+  const txt = $('#loadtxt'), fill = $('#loadfill');
+  const DUR = 2100, st = performance.now();
+  let finished = false;
+  const done = ()=>{ if(finished) return; finished = true; showResult(); };
+
+  (function tick(now){
+    if(finished) return;
+    // rAF 回调的时间戳是「帧起始时间」，可能早于 st，必须双向钳位，否则 k 会为负
+    const k = Math.max(0, Math.min(1, (now - st) / DUR));
+    fill.style.width = (k * 100) + '%';
+    const idx = Math.max(0, Math.min(LOAD_MSGS.length - 1, Math.floor(k * LOAD_MSGS.length)));
+    if(txt.textContent !== LOAD_MSGS[idx]) txt.textContent = LOAD_MSGS[idx];
+    if(k < 1) requestAnimationFrame(tick);
+    else setTimeout(done, 260);
+  })(st);
+
+  // 兜底：后台标签页 / 部分 App WebView 中 rAF 可能不触发，保证一定能进结果页
+  setTimeout(done, DUR + 900);
+}
+
+function computeResult(){
+  const score = { tech:0, biz:0, scene:0, eco:0 };
+  state.picks.forEach((oi, qi)=>{
+    const p = QUESTIONS[qi].options[oi].p;
+    for(const k in p) score[k] += p[k];
+  });
+  const total = DIMS.reduce((a,d)=> a + score[d.key], 0);
+  const qSums = QUESTIONS.map(q => q.options.map(o => Object.values(o.p).reduce((a,b)=>a+b,0)));
+  const MIN = qSums.reduce((a,s)=> a + Math.min(...s), 0);
+  const MAX = qSums.reduce((a,s)=> a + Math.max(...s), 0);
+  const pct = Math.max(0, Math.min(100, Math.round((total - MIN) / (MAX - MIN) * 100)));
+  const role = ROLES.find(r => pct >= r.min && pct <= r.max) || ROLES[ROLES.length-1];
+
+  let dom = 'tech';
+  DIMS.forEach(d=>{ if(score[d.key] > score[dom]) dom = d.key; });
+
+  const last = QUESTIONS.length - 1;
+  const stance = QUESTIONS[last].options[state.picks[last]].stance || '';
+
+  const dimMax = {};
+  DIMS.forEach(d=>{
+    dimMax[d.key] = QUESTIONS.reduce((acc,q)=> acc + Math.max(...q.options.map(o=> o.p[d.key] || 0)), 0);
+  });
+  return { score, pct, role, dom, stance, dimMax };
+}
+
+/* 我的动线日程：把 4 关选择排成一条时间轴 */
+const TL_TIMES = ['09:00','10:30','14:00','15:30'];
+const TL_LABELS = ['签到入场','展区体验','分论坛','立场宣言'];
+function renderTimeline(){
+  $('#resTimeline').innerHTML = state.picks.map((oi, qi)=>{
+    const o = QUESTIONS[qi].options[oi];
+    const extra = qi === 2 ? (' · ' + o.room) : (qi === 3 ? (' · ' + o.stance) : '');
+    return '<div class="tl-item">' +
+             '<span class="tt">' + TL_TIMES[qi] + '</span>' +
+             '<span class="dot"></span>' +
+             '<span class="tx"><b>' + TL_LABELS[qi] + ' —— ' + o.t + extra + '</b><small>' + o.s + '</small></span>' +
+             '<span class="tic">' + icon(o.ic) + '</span>' +
+           '</div>';
+  }).join('');
+}
+
+/* ===== 同场参会榜（演示数据；上线后由话题后端返回真实聚合，见 PRD §4） ===== */
+const RANK_DEMO = {
+  stance:{ '身体派':31, '大脑派':26, '场景派':24, '生态派':19 },
+  top:[
+    { n:'会走路的电烙铁', r:'生态定义者', p:100 },
+    { n:'四足不四足',     r:'创投捕手',   p:92  },
+    { n:'灵巧手搓核桃',   r:'行业方案商', p:84  },
+    { n:'雷达扫全场',     r:'具身开发者', p:76  },
+    { n:'展台第一排',     r:'场景筑路人', p:58  }
+  ]
+};
+function renderRanking(r, t){
+  const mine = r.stance;
+  // 立场战况：把「你」并进样本，比例才反映真实投票
+  const st = Object.assign({}, RANK_DEMO.stance);
+  st[mine] = (st[mine] || 0) + 1;
+  const total = Object.values(st).reduce((a,b)=>a+b, 0);
+  const order = ['身体派','大脑派','场景派','生态派'];
+  $('#rankStance').innerHTML = order.map(k=>{
+    const pct = Math.round(st[k] / total * 100);
+    const me = k === mine;
+    return '<div class="swar-row' + (me ? ' me' : '') + '">' +
+             '<span class="swar-n">' + k + (me ? '<b>你</b>' : '') + '</span>' +
+             '<span class="swar-bar"><i data-w="' + pct + '"></i></span>' +
+             '<span class="swar-p">' + pct + '%</span>' +
+           '</div>';
+  }).join('');
+  setTimeout(()=>{ $('#rankStance').querySelectorAll('.swar-bar i').forEach(i=>{ i.style.width = i.dataset.w + '%'; }); }, 90);
+
+  // TOP 榜：把自己插进去看名次，没进前 5 就补一行
+  const all = RANK_DEMO.top.map(u=>({ n:u.n, r:u.r, p:u.p, me:false }))
+    .concat([{ n:'你', r:t.name, p:r.pct, me:true }]);
+  all.sort((a,b)=>b.p - a.p);
+  const myRank = all.findIndex(u=>u.me) + 1;
+  const shown = all.slice(0, 5);
+  if(!shown.some(u=>u.me)) shown.push({ n:'你', r:t.name, p:r.pct, me:true, rk:myRank });
+  $('#rankTop').innerHTML = shown.map((u,i)=>{
+    const rk = u.rk || (i + 1);
+    return '<li class="rli' + (u.me ? ' me' : '') + '">' +
+             '<span class="rk">' + rk + '</span>' +
+             '<span class="rname">' + u.n + '</span>' +
+             '<span class="rrole">' + u.r + '</span>' +
+             '<span class="rpct">' + u.p + '%</span>' +
+           '</li>';
+  }).join('');
+}
+
+function showResult(){
+  const r = computeResult(), t = r.role;
+  $('#resIcon').innerHTML = icon(t.ic);
+  $('#resTier').textContent = t.tier;
+  $('#resName').textContent = t.name;
+  $('#resQuote').textContent = t.quote;
+  $('#resStance').innerHTML = icon('compass') + '<span>你的立场：' + r.stance + '</span>';
+
+  renderRanking(r, t);
+  renderTimeline();
+
+  $('#resKnows').innerHTML = KNOWS.map((k,i)=>
+    '<div class="know" data-k="' + i + '">' +
+      '<div class="q"><i>Q</i>' + k.q +
+        '<svg class="chev" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">' +
+        '<path d="M11 16l9 9 9-9" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+      '</div>' +
+      '<div class="a">' + k.a + '</div>' +
+    '</div>').join('');
+  $('#resKnows').querySelectorAll('.know').forEach(el=>{
+    el.onclick = ()=>{
+      el.classList.toggle('open');
+      track('activity_module_click', { module_name:'know_' + (+el.dataset.k + 1) });
+    };
+  });
+
+
+  setRoute(QUESTIONS.length - 1, QUESTIONS.length);
+  show('#s-result');
+
+  animateNum($('#resScore'), r.pct, 900);
+  drawRadar($('#radar'), r.score, r.dimMax);
+
+  $('#dims').innerHTML = DIMS.map(d=>{
+    const v = r.score[d.key];
+    const w = Math.round(v / Math.max(r.dimMax[d.key], 1) * 100);
+    return '<div class="dim"><div class="n"><i>' + icon(d.icon) + '</i><em>' + d.name + '</em><span>' + v + '</span></div>' +
+           '<div class="bar"><i data-w="' + Math.min(100, w) + '"></i></div></div>';
+  }).join('');
+  setTimeout(()=>{ document.querySelectorAll('#dims .bar i').forEach(i=>{ i.style.width = i.dataset.w + '%'; }); }, 60);
+
+  window.__lastResult = r;
+  generatePostDraft(r);
+  track('activity_module_show', { module_name:'result' });
+}
+
+function animateNum(el, to, ms){
+  let finished = false;
+  const st = performance.now();
+  (function tick(now){
+    // 同 runSynthesis：首帧时间戳可能早于 st，双向钳位避免出现负分
+    const k = Math.max(0, Math.min(1, (now - st) / ms));
+    const e = 1 - Math.pow(1 - k, 3);
+    el.textContent = Math.round(to * e);
+    if(k < 1) requestAnimationFrame(tick);
+    else finished = true;
+  })(st);
+  // 兜底：rAF 不触发时直接落到终值，避免分数停在 0
+  setTimeout(()=>{ if(!finished) el.textContent = to; }, ms + 250);
+}
+
+/* 四维雷达 */
+function drawRadar(container, score, dimMax){
+  const size = 220, c = size/2, R = 82;
+  const axes = DIMS.map(d=>d.name);
+  const vals = DIMS.map(d=>Math.min(1, score[d.key] / Math.max(dimMax[d.key], 1)));
+  const N = axes.length;
+  const ang = i => -Math.PI/2 + i * 2*Math.PI/N;
+  const pt = (i, r) => [c + Math.cos(ang(i))*r, c + Math.sin(ang(i))*r];
+
+  let grid = '';
+  [0.25,0.5,0.75,1].forEach(f=>{
+    grid += '<polygon points="' + axes.map((_,i)=>pt(i, R*f).join(',')).join(' ') + '" fill="none" stroke="#e8ecf3" stroke-width="1"/>';
+  });
+  let spokes = '';
+  axes.forEach((_,i)=>{ const p = pt(i,R); spokes += '<line x1="' + c + '" y1="' + c + '" x2="' + p[0] + '" y2="' + p[1] + '" stroke="#eef1f7" stroke-width="1"/>'; });
+  const dataPts = vals.map((v,i)=>pt(i, R*Math.max(v,0.06)).join(',')).join(' ');
+  let dots = '';
+  vals.forEach((v,i)=>{ const p = pt(i, R*Math.max(v,0.06)); dots += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="4" fill="#0066FF" stroke="#fff" stroke-width="2"/>'; });
+  let labels = '';
+  axes.forEach((name,i)=>{
+    const p = pt(i, R+22);
+    labels += '<text x="' + p[0] + '" y="' + (p[1]+4) + '" text-anchor="middle" font-size="12" font-weight="600" fill="#4a5568">' + name + '</text>';
+  });
+
+  container.innerHTML =
+    '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '">' +
+      '<defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1">' +
+        '<stop offset="0%" stop-color="#4d8dff" stop-opacity=".55"/>' +
+        '<stop offset="100%" stop-color="#7A5AF8" stop-opacity=".55"/>' +
+      '</linearGradient></defs>' +
+      grid + spokes +
+      '<polygon points="' + dataPts + '" fill="url(#rg)" stroke="#0066FF" stroke-width="2">' +
+        '<animate attributeName="opacity" from="0" to="1" dur="0.7s" fill="freeze"/>' +
+      '</polygon>' + dots + labels +
+    '</svg>';
+}
+
+/* ============================================================
+   7. 海报（把 SVG 图标转图后绘制）
+   ============================================================ */
+function svgToImage(name, px, color){
+  return new Promise(res=>{
+    let done = false;
+    const fin = v =>{ if(done) return; done = true; res(v); };
+    const raw = icon(name).replace(/currentColor/g, color).replace('class="isvg"', 'width="' + px + '" height="' + px + '"');
+    const img = new Image();
+    img.onload = ()=> fin(img);
+    img.onerror = ()=> fin(null);
+    // 兜底：部分 WebView 对 data: 图不解码，缺图也要出海报，不能卡死
+    setTimeout(()=> fin(null), 1500);
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(raw);
+  });
+}
+async function makePoster(){
+  const r = window.__lastResult; if(!r) return;
+  track('activity_module_click', { module_name:'save_poster' });
+  const t = r.role;
+  const W = 640, H = 960;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const g = cv.getContext('2d');
+
+  const grad = g.createLinearGradient(0,0,W,H);
+  grad.addColorStop(0,'#0A2540'); grad.addColorStop(.55,'#123a6b'); grad.addColorStop(1,'#0A2540');
+  g.fillStyle = grad; g.fillRect(0,0,W,H);
+
+  g.strokeStyle = 'rgba(255,255,255,.06)'; g.lineWidth = 1;
+  for(let x=0;x<W;x+=32){ g.beginPath(); g.moveTo(x,0); g.lineTo(x,H); g.stroke(); }
+  for(let y=0;y<H;y+=32){ g.beginPath(); g.moveTo(0,y); g.lineTo(W,y); g.stroke(); }
+
+  g.textAlign = 'center';
+  g.fillStyle = 'rgba(255,255,255,.62)'; g.font = '600 20px -apple-system,PingFang SC,sans-serif';
+  g.fillText('2026 世界物理 AI 大会 · 身份牌', W/2, 88);
+  g.fillStyle = 'rgba(125,226,255,.95)'; g.font = '700 22px -apple-system,PingFang SC,sans-serif';
+  g.fillText('宇十俱进 · 树业共生', W/2, 124);
+
+  g.strokeStyle = 'rgba(255,255,255,.28)'; g.lineWidth = 2;
+  roundRect(g, 60, 168, W-120, 472, 24); g.stroke();
+
+  const img = await svgToImage(t.ic, 132, '#7DE2FF');
+  if(img) g.drawImage(img, W/2 - 66, 200, 132, 132);
+
+  g.fillStyle = '#22D3EE'; g.font = '700 22px -apple-system,PingFang SC,sans-serif';
+  g.fillText(t.tier, W/2, 368);
+
+  g.fillStyle = '#fff'; g.font = '800 52px -apple-system,PingFang SC,sans-serif';
+  g.fillText(t.name, W/2, 430);
+
+  g.fillStyle = '#fff'; g.font = '800 88px -apple-system,PingFang SC,sans-serif';
+  g.fillText(r.pct + '%', W/2, 530);
+  g.fillStyle = 'rgba(255,255,255,.6)'; g.font = '600 20px -apple-system,PingFang SC,sans-serif';
+  g.fillText('生态参与度', W/2, 562);
+
+  g.fillStyle = '#F5A623'; g.font = '700 26px -apple-system,PingFang SC,sans-serif';
+  g.fillText('我的立场：' + r.stance, W/2, 608);
+
+  const tags = t.tags.concat([DOM_TAG[r.dom]]);
+  g.font = '600 20px -apple-system,PingFang SC,sans-serif';
+  const widths = tags.map(tag=> g.measureText(tag).width + 32);
+  const totalW = widths.reduce((a,b)=>a+b,0) + (tags.length-1)*12;
+  let tx = W/2 - totalW/2;
+  tags.forEach((tag,idx)=>{
+    const w = widths[idx];
+    g.fillStyle = 'rgba(255,255,255,.12)'; roundRect(g, tx, 664, w, 42, 21); g.fill();
+    g.strokeStyle = 'rgba(255,255,255,.22)'; roundRect(g, tx, 664, w, 42, 21); g.stroke();
+    g.fillStyle = 'rgba(255,255,255,.92)';
+    g.fillText(tag, tx + w/2, 692);
+    tx += w + 12;
+  });
+
+  g.fillStyle = 'rgba(255,255,255,.8)'; g.font = '24px -apple-system,PingFang SC,sans-serif';
+  wrapText(g, t.quote, W/2, 754, W-120, 36);
+
+  const mid = state.picks.map((oi,qi)=> QUESTIONS[qi].options[oi].t.replace(/押「|」|的观众|\/ 渠道商|\/ 产品从业者|\/ 转行者| 四足机器狗| 开发者生态| 灵巧手 \+ 4D 雷达| 人形机器人/g, '').trim());
+  g.fillStyle = 'rgba(255,255,255,.52)'; g.font = '19px -apple-system,PingFang SC,sans-serif';
+  g.fillText('我的动线：' + mid.join(' → '), W/2, 838);
+
+  g.fillStyle = 'rgba(255,255,255,.5)'; g.font = '20px -apple-system,PingFang SC,sans-serif';
+  g.fillText('10.22 杭州 · 你是场上的谁？', W/2, 878);
+  g.font = '700 22px -apple-system,PingFang SC,sans-serif';
+  g.fillStyle = 'rgba(125,226,255,.9)';
+  g.fillText('打开脉脉，领取你的身份牌', W/2, 914);
+
+  try{
+    $('#posterImg').src = cv.toDataURL('image/png');
+    $('#posterModal').classList.add('on');
+  }catch(e){
+    // toDataURL 可能因画布污染失败；给用户明确反馈，不要静默无响应
+    toast('海报生成失败，请重试或直接发帖分享你的结果', 'warn');
+  }
+}
+function roundRect(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
+function wrapText(g, text, x, y, maxW, lh){
+  const chars = text.split(''); let line = '', lines = [];
+  chars.forEach(ch=>{ if(g.measureText(line+ch).width > maxW){ lines.push(line); line = ch; } else line += ch; });
+  if(line) lines.push(line);
+  lines.forEach((l,i)=> g.fillText(l, x, y + i*lh));
+}
+function closePoster(e){ if(e && e.target && e.target.id !== 'posterModal') return; $('#posterModal').classList.remove('on'); }
+
+/* ============================================================
+   8. 发布链路（webcid fail-closed）
+   ============================================================ */
+function precheckPublish(){
+  const isInApp = /taoumaimai|maimai/i.test(navigator.userAgent) || window.__IS_IN_APP__ === true;
+  if(!isInApp){
+    // 正式环境：站外唤端 / 统一登录回流；可信用户 ID 由服务端注入
+    // return { ok:false, code:'NEED_LOGIN', msg:'请先登录脉脉后再发布' };
+  }
+  if(!WEBCID){
+    if(DEMO_MODE) return { ok:true, demo:true };
+    return { ok:false, code:'NO_WEBCID', msg:'发布目标圈子未配置（webcid 缺失），已阻止发布' };
+  }
+  if(!/^\d+$/.test(WEBCID)){
+    return { ok:false, code:'BAD_WEBCID', msg:'圈子 webcid 非法（' + WEBCID + '），已阻止发布' };
+  }
+  return { ok:true };
+}
+function generatePostDraft(r){
+  const [identity, exhibit, forum, stance] = state.picks;
+  const openings = [
+    '宇树这场物理 AI 大会，我想先去看看热闹。但真让我排一天的行程，还是有几样东西想认真看。',
+    '如果去宇树这场物理 AI 大会，我想带着一个问题进去：现在学什么、做什么，才有机会参与到机器人这件事里？',
+    '看宇树这场物理 AI 大会的介绍，我更想看的是产品背后的细节。台上演示很漂亮，真到开发和使用的时候，还有多少坑要填？',
+    '如果去宇树这场物理 AI 大会，我会先找能聊具体合作的人。产品到哪一步了、谁来交付、出了问题谁来维护，这些比一张合影更有用。'
+  ];
+  const exhibits = [
+    '展区我会先去看 Go2 机器狗。比起再看一遍跑跳视频，我更想问：普通人买回去，除了拍视频还能用来干什么？维护麻不麻烦？',
+    '展区我会先去 UniStore。机器人有了软件商店挺有意思，但我想看看里面到底有多少东西能直接用，开发者做完一个应用，又怎么持续赚到钱。',
+    '展区我会先看 Dex5 灵巧手和 4D 雷达。跑得快已经看过不少了，我更好奇拿取小物件、识别周围环境这些细活，能不能稳定做，而不是只成功一次。',
+    '展区我会先看 G1 / H2 人形机器人。想看的不是动作有多帅，而是换个地方、换个任务之后，还能不能照样完成。最好能多看几次，不只看剪好的片段。'
+  ];
+  const forums = [
+    '下午会选普教和文娱那场。机器人要让更多人用起来，学校、展馆这些地方可能更容易先接触到。我想听听实际用了以后，老师和运营人员怎么评价。',
+    '下午会选行业应用那场。我想听具体案例：一个项目花了多少钱，省了多少人力，运行半年后还在不在用。能把这些说清楚，就比只报客户名字有说服力。',
+    '下午会选开发者那场。接口开放到什么程度，工具顺不顺手，遇到问题能不能找到文档和人，这些会直接影响我愿不愿意动手试。',
+    '下午会选创投路演那场。我想听创业团队怎么回答一个问题：第一批客户为什么买，第二批客户又从哪来？技术很强当然加分，但不能一直靠演示过日子。'
+  ];
+  const stances = [
+    '最后让我押一边，我还是押身体。模型再聪明，摔一次、抓不住、续航不够，任务就做不下去。先把稳定性和成本做好，我才会相信它能走出展台。',
+    '最后让我押一边，我押大脑。身体已经能做不少动作了，但换句话说指令、换个没见过的环境，就可能不会做了。我更期待它能听懂需求，自己把任务拆开做。',
+    '最后让我押一边，我押场景。先找到一个客户真愿意付钱、机器人又能反复完成的任务，哪怕很小也行。有了这笔账，后面怎么改硬件和模型才有方向。',
+    '最后让我押一边，我押生态。一家公司不可能把所有行业的活都摸透。硬件、开发工具、做应用的人和交付的人能不能接上，我觉得会决定机器人到底能走多远。'
+  ];
+  const endings = [
+    '你会先等机器人把哪项基本功练好？还是觉得身体已经够用，问题在别处？',
+    '你觉得机器人现在最缺的是理解能力，还是硬件还没过关？',
+    '如果只能先落地一个任务，你会选哪个？我想听点具体的。',
+    '如果你是开发者或做项目的人，什么条件会让你愿意进来一起做？'
+  ];
+  $('#draftBody').value = [openings[identity], exhibits[exhibit], forums[forum], stances[stance],
+    '小测试给我的参会角色是「' + r.role.name + '」，生态参与度 ' + r.pct + '%。分数就当个乐子，上面这些才是我真想去问的。', endings[stance]].join('\n\n');
+  $('#draftTopic').textContent = '#' + CONFIG.topicName + '#';
+  updateDraftPreview();
+}
+function updateDraftPreview(){
+  const body = $('#draftBody').value;
+  $('#draftCount').textContent = body.length + ' / 2000 字';
+}
+function getPostDraft(){
+  const body = $('#draftBody').value.trim();
+  return body ? body + '\n\n#' + CONFIG.topicName + '#' : '';
+}
+
+function publish(){
+  const body = getPostDraft();
+  if(!body){
+    toast('请先填写帖子正文', 'warn');
+    $('#draftBody').focus();
+    return;
+  }
+  const chk = precheckPublish();
+  if(!chk.ok){
+    toast(chk.msg + '。上线时由运营在裸链追加 webcid 指定同事圈，不会默认发到其它圈子。', 'warn');
+    return;
+  }
+  // TODO(正式): request-new.post('/api/.../publish', { body, topic_etid: CONFIG.topicEtid, webcid: WEBCID })
+  //              → 成功后 location.href = 帖子详情页
+  track('activity_module_click', { module_name:'publish' });
+  if(chk.demo){
+    toast('演示模式 · 模拟发布成功（未配置圈子）。正式环境在裸链追加 webcid 后发到指定同事圈');
+  } else {
+    toast('Demo 模拟发布 · 话题 #' + CONFIG.topicName + '# → 同事圈 webcid=' + WEBCID);
+  }
+}
+
+function startTest(){
+  clearTimeout(pickAdvanceTimer);
+  clearTimeout(pickFadeTimer);
+  pickPending = false;
+  $('#pickFeedback').className = 'pick-feedback';
+  $('#pickFeedback').innerHTML = '';
+  state.qi = 0; state.picks = [];
+  renderRoute();
+  renderQ();
+  show('#s-quiz');
+  track('activity_module_click', { module_name:'start_test' });
+}
+function restart(){ startTest(); }
+
+let toastTimer;
+function toast(msg, kind){
+  const el = $('#toast');
+  el.classList.toggle('warn', kind === 'warn');
+  el.innerHTML = kind ? icon(kind === 'warn' ? 'warn' : 'check') + '<span>' + msg + '</span>' : msg;
+  el.classList.add('on');
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=> el.classList.remove('on'), 2800);
+}
+function track(event, params){
+  // TODO(正式): voyagerTrack(event, { activity_name: CONFIG.activityName, ...params })
+  console.log('[track]', event, Object.assign({ activity_name: CONFIG.activityName }, params || {}));
+}
+
+window.addEventListener('load', ()=>{
+  paintIcons(document);
+
+  const timeLine = '活动时间：' + CONFIG.startText + ' ~ ' + CONFIG.endText;
+  const cn = document.getElementById('coverNote');
+  const rn = document.getElementById('resultNote');
+  if(cn) cn.innerHTML = timeLine + '<br>' + CONFIG.rewardText;
+  if(rn) rn.innerHTML = timeLine + '<br>' + CONFIG.rewardText + '，完成测试 / 发帖即计入参与';
+
+  if(DEMO_MODE && rn){
+    const tip = document.createElement('div');
+    tip.className = 'timer';
+    tip.style.color = '#F5A623';
+    tip.textContent = '演示模式（?demo=1）：已跳过圈子预检，仅用于预览发布链路';
+    rn.parentNode.insertBefore(tip, rn.nextSibling);
+  }
+  renderRoute();
+  track('activity_page_show');
+});
+</script>
+</body>
+</html>
